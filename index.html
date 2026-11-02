@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>會計學段考題庫．遊戲化複習</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231f5e5b'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23f6f1e4' font-family='serif' font-weight='bold'>會</text></svg>">
+<style>
+:root{
+  --paper:#f6f1e4; --paper-2:#efe8d4; --card:#fbf7ec;
+  --ink:#2b2a26; --ink-soft:#5a564c;
+  --teal:#1f5e5b; --teal-deep:#14433f; --teal-soft:#d8e6e2;
+  --gold:#b8862e; --gold-soft:#ecd9a8; --line:#d6cdb4;
+  --good:#2f7a4f; --good-bg:#dcefe0;
+  --bad:#b23a3a; --bad-bg:#f3d9d6;
+  --pend:#c8781a; --pend-bg:#f6e2c2;
+  --ai:#2c5f8a; --ai-bg:#d6e4f0;
+  --shadow:0 2px 10px rgba(60,50,20,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
+  font-family:"Noto Serif TC","Songti TC","PMingLiU","Microsoft JhengHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px;line-height:1.7;}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--teal)}
+.wrap{max-width:920px;margin:0 auto;padding:24px 18px 80px}
+.topbar{display:flex;align-items:baseline;justify-content:space-between;
+  padding:10px 4px 18px;border-bottom:2px solid var(--teal);margin-bottom:22px}
+.brand{font-size:22px;font-weight:700;color:var(--teal-deep);letter-spacing:1px}
+.brand small{color:var(--ink-soft);font-weight:400;margin-left:8px;font-size:13px}
+.hero{background:linear-gradient(135deg,var(--teal-deep),var(--teal));color:#fbf7ec;
+  border-radius:14px;padding:26px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.hero h1{margin:0 0 6px;font-size:26px;letter-spacing:2px}
+.hero p{margin:0;opacity:.92;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:18px}
+.stat{background:rgba(255,255,255,.12);border-radius:10px;padding:10px 8px;text-align:center}
+.stat b{display:block;font-size:22px;font-weight:700}
+.stat span{font-size:12px;opacity:.85}
+/* mastery report */
+.mastery{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:20px 22px;box-shadow:var(--shadow);margin-bottom:16px}
+.mastery h2{margin:0 0 12px;color:var(--teal-deep);font-size:18px;border-left:4px solid var(--gold);padding-left:10px}
+.mastery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.m-row{background:var(--paper-2);border-radius:10px;padding:12px;text-align:center}
+.m-row .ch{font-weight:700;color:var(--teal-deep);font-size:15px}
+.m-row .stars{font-size:18px;color:var(--gold);margin:4px 0;letter-spacing:2px}
+.m-row .meta{font-size:12px;color:var(--ink-soft)}
+.m-row .none{color:var(--ink-soft);font-size:13px}
+.m-rec{margin-top:10px;padding:8px 12px;background:var(--gold-soft);border-radius:8px;
+  font-size:13px;color:#6b4d10}
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px}
+.mode-card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:20px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;
+  transition:transform .15s ease,border-color .15s}
+.mode-card:hover{transform:translateY(-2px);border-color:var(--teal)}
+.mode-card h2{margin:0;font-size:19px;color:var(--teal-deep)}
+.mode-card .tag{display:inline-block;align-self:flex-start;background:var(--gold-soft);
+  color:#6b4d10;padding:2px 10px;border-radius:999px;font-size:12px}
+.mode-card p{margin:0;color:var(--ink-soft);font-size:14px;flex:1}
+.mode-card .go{margin-top:8px;background:var(--teal);color:#fff;border:0;border-radius:10px;
+  padding:10px;font-size:15px;font-weight:600;letter-spacing:1px}
+.mode-card .go:hover{background:var(--teal-deep)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:22px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel h2{margin:0 0 14px;color:var(--teal-deep);font-size:20px;border-left:4px solid var(--gold);padding-left:10px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:14px;color:var(--ink-soft);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:14px}
+.chip.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.row>*{flex:0 0 auto}
+input[type=number]{width:100px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:15px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-soft)}
+.toggle input{width:18px;height:18px;accent-color:var(--teal)}
+.btn-primary{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:12px 22px;font-size:16px;font-weight:600;letter-spacing:1px}
+.btn-primary:hover{background:var(--teal-deep)}
+.btn-ghost{background:transparent;color:var(--teal);border:1px solid var(--teal);border-radius:10px;padding:10px 18px;font-size:14px}
+.btn-ghost:hover{background:var(--teal-soft)}
+.back{font-size:13px;color:var(--ink-soft);background:none;border:0;padding:4px 0;margin-bottom:10px}
+.back:hover{color:var(--teal)}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;
+  margin-bottom:14px;box-shadow:var(--shadow);flex-wrap:wrap}
+.hud .score{font-size:18px;font-weight:700;color:var(--teal-deep)}
+.hud .combo{font-size:13px;color:var(--gold);font-weight:600}
+.hud .prog{flex:1;min-width:120px;height:8px;background:var(--paper-2);border-radius:999px;overflow:hidden}
+.hud .prog>i{display:block;height:100%;background:var(--teal);transition:width .3s}
+.hud .ptext{font-size:13px;color:var(--ink-soft)}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+.qmeta{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.badge{font-size:12px;padding:2px 9px;border-radius:999px;font-weight:600}
+.badge.chapter{background:var(--teal-soft);color:var(--teal-deep)}
+.badge.no{background:#eee6cf;color:#6b4d10}
+.badge.src-解答本{background:var(--good);color:#fff}
+.badge.src-AI{background:var(--ai);color:#fff}
+.badge.src-AI判定{background:var(--pend);color:#fff}
+.badge.src-待核对{background:var(--pend-bg);color:var(--pend);border:1px dashed var(--pend)}
+.badge.type{background:var(--gold-soft);color:#6b4d10}
+.qtext{font-size:17px;line-height:1.8;white-space:pre-wrap;margin:4px 0 16px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;
+  padding:12px 14px;font-size:15px;line-height:1.6;white-space:pre-wrap}
+.opt:disabled{cursor:default}
+.opt:disabled:hover{border-color:var(--line)}
+.opt.correct{background:var(--good-bg);border-color:var(--good);color:var(--good);font-weight:600}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.opt .lbl{display:inline-block;min-width:34px;font-weight:700;color:var(--teal-deep)}
+.feedback{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14px;display:none}
+.feedback.show{display:block}
+.feedback.good{background:var(--good-bg);color:var(--good)}
+.feedback.bad{background:var(--bad-bg);color:var(--bad)}
+.feedback.pend{background:var(--pend-bg);color:var(--pend)}
+.explain{margin-top:10px;padding:10px 12px;background:var(--paper-2);border-left:3px solid var(--gold);
+  border-radius:6px;font-size:14px;color:var(--ink-soft);white-space:pre-wrap;max-height:300px;overflow:auto}
+.next-row{margin-top:16px;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+/* flip card */
+.flip-face{display:none}
+.flip-face.show{display:block}
+.flip-btn{width:100%;margin-top:14px;background:var(--teal);color:#fff;border:0;border-radius:10px;
+  padding:14px;font-size:16px;font-weight:600;letter-spacing:1px}
+.flip-btn:hover{background:var(--teal-deep)}
+/* 5-point rating */
+.rating{margin-top:14px;padding:14px;background:var(--paper-2);border-radius:10px}
+.rating .rlab{font-size:14px;color:var(--ink-soft);margin-bottom:8px}
+.rstars{display:flex;gap:8px;justify-content:center;margin:8px 0}
+.rstar{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:#fff;
+  font-size:16px;font-weight:700;color:var(--ink-soft);display:flex;align-items:center;justify-content:center}
+.rstar.on{background:var(--gold);border-color:var(--gold);color:#fff}
+.rating .rsub{text-align:center;margin-top:8px}
+.rating .rsub button{background:var(--teal);color:#fff;border:0;border-radius:8px;padding:8px 24px;font-weight:600}
+.rated{margin-top:10px;text-align:center;color:var(--good);font-weight:600}
+/* report table for calc answers */
+.rpt{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:14px}
+.rpt .rpt-head{background:var(--teal-soft);color:var(--teal-deep);padding:10px 14px;font-weight:700;text-align:center}
+.rpt .rpt-row{display:flex;justify-content:space-between;padding:6px 14px;border-top:1px solid var(--line)}
+.rpt .rpt-row.total{background:var(--gold-soft);font-weight:700}
+.rpt .rpt-row .amt{font-family:"SF Mono","Menlo",monospace}
+.rpt .rpt-row .amt.neg{color:var(--bad)}
+.rpt .rpt-note{padding:8px 14px;font-size:13px;color:var(--ink-soft);white-space:pre-wrap}
+.pdf-link{display:inline-block;margin-top:10px;background:var(--gold);color:#fff;
+  padding:8px 16px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600}
+.pdf-link:hover{background:#9a6f22}
+.pend-note{margin-top:10px;padding:12px;background:var(--pend-bg);color:var(--pend);
+  border-radius:8px;font-size:14px;border:1px dashed var(--pend)}
+/* result */
+.result-hero{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:26px;box-shadow:var(--shadow);text-align:center;margin-bottom:16px}
+.result-hero .big{font-size:48px;font-weight:700;color:var(--teal-deep);line-height:1.1}
+.result-hero .sub{color:var(--ink-soft);margin-top:6px;font-size:14px}
+.result-hero .rate{font-size:18px;color:var(--gold);font-weight:700;margin-top:8px}
+.wrong-list{display:flex;flex-direction:column;gap:8px}
+.wrong-item{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--bad);
+  border-radius:8px;padding:10px 12px;font-size:14px;cursor:pointer}
+.wrong-item:hover{background:var(--teal-soft)}
+.wrong-item b{color:var(--bad)}
+.wrong-detail{margin-top:8px;padding:10px;background:var(--paper-2);border-radius:6px;font-size:13px;display:none;white-space:pre-wrap}
+.wrong-item.open .wrong-detail{display:block}
+/* explainer */
+.exp-list{display:flex;flex-direction:column;gap:12px}
+.exp-item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.exp-item .q{font-size:15px;line-height:1.7;white-space:pre-wrap;margin-bottom:8px}
+.exp-item .a{font-size:14px;white-space:pre-wrap;background:var(--paper-2);padding:10px;border-radius:6px;margin-bottom:6px}
+.exp-item .e{font-size:13px;white-space:pre-wrap;color:var(--ink-soft);padding-left:10px;border-left:3px solid var(--gold)}
+@media (max-width:640px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .mastery-grid{grid-template-columns:repeat(2,1fr)}
+  .mode-grid{grid-template-columns:1fr}
+  .qcard{padding:16px}
+  .qtext{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">會計學段考題庫<small>遊戲化複習</small></div>
+  </div>
+  <div id="app"></div>
+</div>
+<script>
+const QUESTIONS = [{"no": "1-問1", "type": "簡答", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "請問會計的意義為何？", "options": {}, "answer": "會計的意義為會計係對經濟資訊之認定、衡量與溝通之程序，以協助使用者作審慎之判斷與決策。其中，(1) 認定為對經濟交易事項，加以分析及辨認是否屬於特定經濟價值體交易的程序。(2) 衡量為將認定屬於特定經濟個體的交易事項，使用會計語言加以認列，並依其性質分類彙總，編製成財務報表的過程。(3) 溝通未經認定與衡量後所產生的會計資訊(即，財務報表)，提供報表使用者作為決策的依據。", "explanation": "會計的意義為會計係對經濟資訊之認定、衡量與溝通之程序，以協助使用者作審慎之判斷與決策。其中，(1) 認定為對經濟交易事項，加以分析及辨認是否屬於特定經濟價值體交易的程序。(2) 衡量為將認定屬於特定經濟個體的交易事項，使用會計語言加以認列，並依其性質分類彙總，編製成財務報表的過程。(3) 溝通未經認定與衡量後所產生的會計資訊(即，財務報表)，提供報表使用者作為決策的依據。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第1題；解答出處: IMG_0354.HEIC"}, {"no": "1-問2", "type": "簡答", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "請問會計資訊的使用者及其功能為何？", "options": {}, "answer": "會計資訊，按使用者可分為：(1) 內部使用者，如：企業的管理當局，包括負責企業內部規劃和經營管理的高階人員；及(2) 外部使用者，如：投資人、債權人、政府機關及其他外部人士。而其功能分別為：(1) 提供管理資訊予企業管理階層查考之用，以協助管理階層瞭解企業的經營現況，評估營運績效，作為改進並規劃未來的經營方式之用。(2) 幫助投資人及債權人作投資授信的決策。(3) 提供政府機關作為判斷企業是否遵守稅法規定及申報營利事業所得稅的依據，並作為監督管理企業之用，以保護報表使用者之權益。(4) 提供其他外部人士判斷企業是否有履約能力的判斷及評估企業的福利政策，以增進企業員工的福利。", "explanation": "會計資訊，按使用者可分為：(1) 內部使用者，如：企業的管理當局，包括負責企業內部規劃和經營管理的高階人員；及(2) 外部使用者，如：投資人、債權人、政府機關及其他外部人士。而其功能分別為：(1) 提供管理資訊予企業管理階層查考之用，以協助管理階層瞭解企業的經營現況，評估營運績效，作為改進並規劃未來的經營方式之用。(2) 幫助投資人及債權人作投資授信的決策。(3) 提供政府機關作為判斷企業是否遵守稅法規定及申報營利事業所得稅的依據，並作為監督管理企業之用，以保護報表使用者之權益。(4) 提供其他外部人士判斷企業是否有履約能力的判斷及評估企業的福利政策，以增進企業員工的福利。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第2題；解答出處: IMG_0354.HEIC"}, {"no": "1-問3", "type": "簡答", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "何謂會計資訊？", "options": {}, "answer": "會計資訊是對經濟個體的財務狀況、經營成果及財務狀況之變動提供記錄與報導，提供報表使用者作為決策之用。", "explanation": "會計資訊是對經濟個體的財務狀況、經營成果及財務狀況之變動提供記錄與報導，提供報表使用者作為決策之用。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第3題；解答出處: IMG_0354.HEIC"}, {"no": "1-問4", "type": "簡答", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "何謂會計？何謂簿記？兩者有何區別？", "options": {}, "answer": "會計對經濟交易事項，加以分析、辨認、認列、分類、彙總及編製成財務報表，傳達經濟個體經營結果及財務狀況等會計資訊，提供報表使用者作為決策之用。簿記是例行記錄經濟事項，是一種機械化的程序，著重在會計的記錄與財務報表的編製部份，是會計的一個環節與技術。兩者之區別為會計則包括簿記，範圍更廣，會計", "explanation": "會計對經濟交易事項，加以分析、辨認、認列、分類、彙總及編製成財務報表，傳達經濟個體經營結果及財務狀況等會計資訊，提供報表使用者作為決策之用。簿記是例行記錄經濟事項，是一種機械化的程序，著重在會計的記錄與財務報表的編製部份，是會計的一個環節與技術。兩者之區別為會計則包括簿記，範圍更廣，會計", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第4題；解答出處: IMG_0354.HEIC"}, {"no": "1-問5", "type": "簡答", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "何謂會計恆等式？請簡述之。", "options": {}, "answer": "會計恆等式也被稱為會計方程式，表示等號的左右邊是恆等，是一個數學式。而在應用會計時，給予會計的意義。因此，可以如下的表達：資產=負債+權益。", "explanation": "會計恆等式也被稱為會計方程式，表示等號的左右邊是恆等，是一個數學式。而在應用會計時，給予會計的意義。因此，可以如下的表達：資產=負債+權益。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第5題；對應解答本題號：1-問6；解答出處: IMG_0355.HEIC"}, {"no": "1-問6", "type": "簡答", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計恆等式的組成項目有哪幾項？", "options": {}, "answer": "會計恆等式組成項目為資產、負債及權益共三項。", "explanation": "會計恆等式組成項目為資產、負債及權益共三項。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第6題；對應解答本題號：1-問7；解答出處: IMG_0355.HEIC"}, {"no": "1-問7", "type": "簡答", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "何謂淨資產或淨值？請簡述之。", "options": {}, "answer": "會計恆等式為資產=負債+權益，改寫為資產−負債=權益，表示權益為資產減負債，被稱為「淨資產」或「淨值」。", "explanation": "會計恆等式為資產=負債+權益，改寫為資產−負債=權益，表示權益為資產減負債，被稱為「淨資產」或「淨值」。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第7題；對應解答本題號：1-問8；解答出處: IMG_0355.HEIC"}, {"no": "1-是1", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計的目的在於提供一個企業個體的營業狀況資訊給使用者決策之用。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。會計的目的在於提供企業整體財務狀況、經營成果與現金流量等經濟資訊，供各類使用者做決策，而非僅限於「營業狀況」一角，描述範圍過於狹隘。關鍵概念：會計目的是廣義的財務資訊提供，不是單一指標。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第1題；解答出處: IMG_0355.HEIC"}, {"no": "1-是2", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "獨資與合夥具有法人資格，但公司不具有法人資格。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤，剛好顛倒。獨資與合夥並不具法人資格，業主對企業債務負無限清償責任；公司組織才是依法登記、具有獨立法人格的主體。關鍵概念：法人資格是公司組織的特徵，非獨資合夥。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第2題；解答出處: IMG_0355.HEIC"}, {"no": "1-是3", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "業主個人的財產與企業的資產應分別處理，不列入企業的資產負債表。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。依「企業個體假設」，企業被視為獨立於業主之外的會計個體，業主私人財產與企業資產必須嚴格劃分，不得混入企業資產負債表。關鍵概念：企業個體假設要求帳主分離。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第3題；解答出處: IMG_0355.HEIC"}, {"no": "1-是4", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "企業的帳務處理應以業主的立場來記載。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。會計應以「企業個體」為立場記帳，記錄企業本身的交易事項，而非以業主個人立場；業主私人事務與企業事務須分開處理。關鍵概念：企業個體假設決定記帳主體是企業本身。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第4題；解答出處: IMG_0355.HEIC"}, {"no": "1-是5", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計是簿記的一部份，乃依據簿記之原理原則而運作，簿記乃會計之指針。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤，剛好顛倒。簿記只是會計中負責記錄的技術性工作，屬會計的一部份；會計範圍較廣，尚包括分類、彙總、分析、解釋與報告。關鍵概念：會計涵蓋簿記，簿記是會計的記錄層面。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第5題；解答出處: IMG_0355.HEIC"}, {"no": "1-是6", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計師與記帳士是工作性質相同。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。會計師具有簽證、審計、稅務簽證等法定專門業務；記帳士主要代辦商業會計帳務及稅務申報，兩者資格、職權與工作性質均不相同。關鍵概念：會計師與記帳士是不同專業資格。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第6題；解答出處: IMG_0355.HEIC"}, {"no": "1-是7", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計期間必定包含十二個月，一定是1月1日開始。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。依本課本定義，會計期間（結算期間）原則上為十二個月，且通常自1月1日起採曆年制，據以定期結算損益並編製財務報表。關鍵概念：會計期間以一年為原則，原採曆年制。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第7題；解答出處: IMG_0355.HEIC"}, {"no": "1-是8", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計期間就是會計年度。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。會計期間泛指為結算損益而劃分的期間，可為月、季或年；會計年度僅指長達十二個月的結算期間，兩者範圍不同，不能說「就是」。關鍵概念：會計期間範圍大於會計年度。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第8題；解答出處: IMG_0355.HEIC"}, {"no": "1-是9", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計年度原則上是曆年制，但若因企業之需求也可報准變更其會計年度之起止日期。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。商業會計原則上採曆年制（1月1日至12月31日），但企業得因營業特性報准變更其會計年度起止日期（如7月制），以配合行業循環。關鍵概念：會計年度可報准變更，非強制1月1日。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第9題；解答出處: IMG_0355.HEIC"}, {"no": "1-是10", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計唯一之目的為編製財務報表。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。會計的最終目的是提供經濟決策有用的財務資訊，編製財務報表只是其中一環；此外尚承擔經營管理、課稅基礎、考核績效等功能，並非「唯一目的」。關鍵概念：會計目的多角化，編表只是手段。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第10題；解答出處: IMG_0355.HEIC"}, {"no": "1-是11", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "企業內所發生之任何事項，皆可用貨幣數字衡量記錄。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。企業內發生的事項中，只有能以貨幣客觀衡量、並影響財務狀況的「會計交易事項」才入帳；諸如董事長更替、簽訂合約等非貨幣性事項不予記錄。關鍵概念：貨幣衡量假設限定入帳範圍。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第11題；解答出處: IMG_0355.HEIC"}, {"no": "1-是12", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計人員除應具有專業知識及技能之外，還須具備職業道德。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。會計人員除須具備專業知識與技術能力外，尚須遵守職業道德（如正直、客觀、保密），始能提供可信賴的財務資訊。關鍵概念：專業能力與職業道德並重。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第12題；解答出處: IMG_0355.HEIC"}, {"no": "1-是13", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0338.HEIC", "text": "會計方程式為資產=負債+權益。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。基本會計方程式為「資產＝負債＋業主權益」，表達企業所擁有資源（資產）來自借貸（負債）與業主投入及保留盈餘（權益）兩大來源。關鍵概念：會計恆等式是複式簿記的基礎。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第13題；解答出處: IMG_0355.HEIC"}, {"no": "1-是14", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "企業若發生虧損，則會計恆等式不會平衡。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。無論企業賺錢或虧損，每筆交易都同時借貸等額入帳，會計恆等式永遠平衡；虧損只是使權益（保留盈餘）減少，並不會破壞恆等關係。關鍵概念：任何交易皆不破壞恆等式。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第14題；解答出處: IMG_0355.HEIC"}, {"no": "1-是15", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "資產與負債的差額為權益，又稱為淨資產。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。由「資產＝負債＋權益」移項可得「權益＝資產−負債」，此差額即企業淨資產，代表業主對企業資產的剩餘求償權。關鍵概念：權益又稱淨資產或剩餘權益。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第15題；解答出處: IMG_0355.HEIC"}, {"no": "1-選1", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "會計資訊使用者為何者？", "options": {"(1)": "投資者", "(2)": "企業管理當局", "(3)": "稅捐稽徵機關", "(4)": "以上皆是。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕正確答案為(4)。投資者（做投資決策）、企業管理當局（做營運決策）、稅捐稽徵機關（做課稅依據）都是會計資訊的使用者，故以上皆是。關鍵概念：會計資訊使用者廣泛，含內外部利害關係人。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記A；解答出處: IMG_0355.HEIC"}, {"no": "1-選2", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "會計資訊是", "options": {"(1)": "提供管理當局決策之用", "(2)": "提供稅務課稅依據", "(3)": "提供投資者決策的參考", "(4)": "以上皆是。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕正確答案為(4)。會計資訊同時服務於管理當局營運決策、稅務機關課稅，以及投資人與債權人投資決策之參考，三者皆為其用途。關鍵概念：會計資訊具多元決策用途。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記4；解答出處: IMG_0355.HEIC"}, {"no": "1-選3", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "企業為及時提供會計資訊給報表使用者，乃劃分會計期間其目的為何？", "options": {"(1)": "有助於分工合作", "(2)": "便於定期結算損益並編製報表", "(3)": "反映物價漲跌", "(4)": "防止員工舞弊。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。劃分會計期間的目的，在於把企業連續經營的生命切割成等距段落，以便定期結算損益、編製財務報表及時提供資訊；與分工、物價、防弊無直接關係。關鍵概念：會計期間假設使定期結算成為可能。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記2；解答出處: IMG_0355.HEIC"}, {"no": "1-選4", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "通常會計年度是指", "options": {"(1)": "一個月", "(2)": "一季", "(3)": "半年", "(4)": "一年。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕正確答案為(4)。會計年度為企業劃定的十二個月結算期間，通常以一年（曆年制或營業年度）為單位，月、季、半年皆非完整會計年度。關鍵概念：會計年度以一年為原則。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記A(4)；解答出處: IMG_0355.HEIC"}, {"no": "1-選5", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "企業之資產、負債必須與企業主資產負債分開處理業主個人資產，依據何種假設？", "options": {"(1)": "企業個體假定", "(2)": "會計期間假定", "(3)": "客觀性原則", "(4)": "重大性原則。"}, "answer": "(1)", "explanation": "〔AI 解析：解答本未印〕正確答案為(1)。企業個體假定要求將企業視為獨立於業主之外的會計主體，故企業本身的資產負債必須與業主個人財產分開記錄。關鍵概念：帳主分離源自企業個體假設。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記1；解答出處: IMG_0355.HEIC"}, {"no": "1-選6", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "下列哪一張財務報表，可以瞭解公司的營業活動現金流量情形？", "options": {"(1)": "資產負債表", "(2)": "現金流量表", "(3)": "權益變動表", "(4)": "損益表。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。現金流量表專門表達企業在一特定期間內營業、投資、融資三大活動的現金流入與流出，故可瞭解營業活動現金流量情形。關鍵概念：現金流量表專責表達現金流動。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記2；解答出處: IMG_0355.HEIC"}, {"no": "1-選7", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0339.HEIC", "text": "下列何者是損益表之組成項目？", "options": {"(1)": "資產", "(2)": "負債", "(3)": "收入", "(4)": "權益。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。損益表由收入與費用（損益項目）所組成；資產、負債與權益是資產負債表的組成項目，不屬損益表。關鍵概念：損益表＝收入−費用。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記3；解答出處: IMG_0355.HEIC"}, {"no": "1-選8", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0340.HEIC", "text": "下列哪一張報表所表達的為特定日期而非特定期間？", "options": {"(1)": "財務狀況表", "(2)": "綜合損益表", "(3)": "權益變動表", "(4)": "現金流量表。"}, "answer": "(1)", "explanation": "〔AI 解析：解答本未印〕正確答案為(1)。財務狀況表（即資產負債表）表達企業「某一特定日期」的財務狀況；綜合損益表、權益變動表、現金流量表皆為表達「一特定期間」流量動態的報表。關鍵概念：資產負債表是時點報表。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "去重：IMG_0339右頁同題，取IMG_0340較清楚；解答出處: IMG_0355.HEIC"}, {"no": "1-選9", "type": "選擇", "chapter": "第一章", "source_image": "IMG_0340.HEIC", "text": "日德商店11月初權益$300,000，月底權益$400,000，收入總額$165,000，當月發放股利$50,000，請問11月份費用總額為", "options": {"(1)": "$200,000", "(2)": "$15,000", "(3)": "$150,000", "(4)": "$300,000。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)$15,000。權益本期增加＝期末$400,000−期初$300,000＝$100,000；而權益增加＝收入−費用−股利，即$100,000＝$165,000−費用−$50,000，解得費用＝$15,000。關鍵概念：用權益變動表反推費用。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "去重：IMG_0339右頁同題，取IMG_0340較清楚；解答出處: IMG_0355.HEIC"}, {"no": "1-計1", "type": "計算", "chapter": "第一章", "source_image": "IMG_0340.HEIC", "text": "下列為玫英商店在×1年相關的資料。服務收入$50,000；薪資費用$15,000；水電費用$1,600；租金費用$3,000；廣告費用$1,100。試作：編製×1年度的損益表。", "options": {}, "answer": "玫英商店損益表 ×1年1月1日至12月31日：收益—服務收入 $50,000；營業費用—薪資費用 $15,000、水電費用 1,600、租金費用 3,000、廣告費用 1,100、費用合計 (20,700)；本期淨利 $29,300。", "explanation": "玫英商店損益表 ×1年1月1日至12月31日：收益—服務收入 $50,000；營業費用—薪資費用 $15,000、水電費用 1,600、租金費用 3,000、廣告費用 1,100、費用合計 (20,700)；本期淨利 $29,300。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第1題；解答出處: IMG_0355.HEIC"}, {"no": "1-計2", "type": "計算", "chapter": "第一章", "source_image": "IMG_0340.HEIC", "text": "下列為日月公司在×1年底相關的資料。現金$33,000；文具用品$12,000；應收帳款$14,000；設備$125,000；應付帳款$21,000；股本$160,000；保留盈餘$3,000。試作：編製×1年底的資產負債表。", "options": {}, "answer": "日月公司資產負債表 ×1年12月31日：資產—現金 $33,000、應收帳款 14,000、文具用品 12,000、設備 125,000、資產總額 $184,000；負債及權益—負債 應付帳款 $21,000；權益 股本 160,000、保留盈餘 3,000；負債及權益總額 $184,000。", "explanation": "日月公司資產負債表 ×1年12月31日：資產—現金 $33,000、應收帳款 14,000、文具用品 12,000、設備 125,000、資產總額 $184,000；負債及權益—負債 應付帳款 $21,000；權益 股本 160,000、保留盈餘 3,000；負債及權益總額 $184,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第2題；解答出處: IMG_0355.HEIC"}, {"no": "1-計3", "type": "計算", "chapter": "第一章", "source_image": "IMG_0341.HEIC", "text": "下列為×1年宏觀公司的相關資料。服務收入$720,000；費用合計$220,000；資產×1年1月1日$900,000；資產×1年12月31日$1,050,000；負債×1年1月1日$300,000；負債×1年12月31日$352,000；保留盈餘×1年1月1日$0；股利×1年[無法辨認]。試作：編製×1年度宏觀公司之權益變動表。", "options": {}, "answer": "宏觀公司權益變動表 ×1年1月1日至12月31日：期初餘額 股本$600,000/保留盈餘$0/合計$600,000；本期股東投資 0/0/0；本期淨利 500,000/500,000；股利 (402,000)/(402,000)；期末餘額 股本$600,000/保留盈餘$98,000/合計$698,000。", "explanation": "宏觀公司權益變動表 ×1年1月1日至12月31日：期初餘額 股本$600,000/保留盈餘$0/合計$600,000；本期股東投資 0/0/0；本期淨利 500,000/500,000；股利 (402,000)/(402,000)；期末餘額 股本$600,000/保留盈餘$98,000/合計$698,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第3題，跨IMG_0340-IMG_0341；解答出處: IMG_0355.HEIC"}, {"no": "1-計4", "type": "計算", "chapter": "第一章", "source_image": "IMG_0341.HEIC", "text": "×1年6月1日投資現金$200,000開設一家溫心公司，下列為該公司×1年6月份之資產、負債及收入、費用的資料。現金$26,000；設備$196,500；護理收入$85,000；應收帳款$17,000；廣告費用$3,000；應付帳款$7,000；保險費用$2,000；薪資費用$24,000；水電費用$8,500。6月份並無增資，股本原為$200,000，但有發放現金股利$15,000。試作：編製×1年6月份溫心公司之損益表、權益變動表及6月底之資產負債表。", "options": {}, "answer": "溫心公司綜合損益表 ×1年6月份：收益—護理收入 $85,000；營業費用—廣告費用 $3,000、保險費用 2,000、薪資費用 24,000、水電費用 8,500、費用合計 (37,500)；本期淨利 $47,500；其他綜合損益 0；綜合損益總額 $47,500。\n\n溫心公司權益變動表 ×1年6月份：期初餘額 股本$200,000/保留盈餘$0/合計$200,000；本期股東投資 0/0/0；本期淨利 47,500/47,500；股利 (15,000)/(15,000)；期末餘額 股本$200,000/保留盈餘$32,500/合計$232,500。溫心公司資產負債表 ×1年6月30日：資產—現金 $26,000、應收帳款 17,000、設備 196,500、資產總額 $239,500；負債及權益—負債 應付帳款 $7,000；權益 股本 200,000、保留盈餘 32,500；負債及權益總額 $239,500。", "explanation": "溫心公司綜合損益表 ×1年6月份：收益—護理收入 $85,000；營業費用—廣告費用 $3,000、保險費用 2,000、薪資費用 24,000、水電費用 8,500、費用合計 (37,500)；本期淨利 $47,500；其他綜合損益 0；綜合損益總額 $47,500。\n\n溫心公司權益變動表 ×1年6月份：期初餘額 股本$200,000/保留盈餘$0/合計$200,000；本期股東投資 0/0/0；本期淨利 47,500/47,500；股利 (15,000)/(15,000)；期末餘額 股本$200,000/保留盈餘$32,500/合計$232,500。溫心公司資產負債表 ×1年6月30日：資產—現金 $26,000、應收帳款 17,000、設備 196,500、資產總額 $239,500；負債及權益—負債 應付帳款 $7,000；權益 股本 200,000、保留盈餘 32,500；負債及權益總額 $239,500。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第4題；解答出處: IMG_0355.HEIC, IMG_0356.HEIC"}, {"no": "1-計5", "type": "計算", "chapter": "第一章", "source_image": "IMG_0341.HEIC", "text": "以下是智勝商店×1年度之財務資料。維修費用$100,000；廣告費用$37,000；服務收入$280,000；保險費用$52,000；薪資費用$100,000；其他綜合損益$0。試作：編製該商店×1年度之綜合損益表。", "options": {}, "answer": "智勝商店綜合損益表 ×1年1月1日至12月31日：收益—服務收入 $280,000；費用—廣告費用 $37,000、維修費用 100,000、保險費用 52,000、薪資費用 100,000、費用合計 (289,000)；本期淨利(損) $(9,000)；其他綜合損益 0；本期綜合損益總額 $(9,000)。", "explanation": "智勝商店綜合損益表 ×1年1月1日至12月31日：收益—服務收入 $280,000；費用—廣告費用 $37,000、維修費用 100,000、保險費用 52,000、薪資費用 100,000、費用合計 (289,000)；本期淨利(損) $(9,000)；其他綜合損益 0；本期綜合損益總額 $(9,000)。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第5題；解答出處: IMG_0356.HEIC"}, {"no": "1-計6", "type": "計算", "chapter": "第一章", "source_image": "IMG_0341.HEIC", "text": "於×1年初股東投資現金$340,000，開設宏康公司，年底時資產總額為$560,000，負債總額為$260,000。試計算下列各問題：(1)×1年度淨利或淨損為何？(2)×1年度總收入為$320,000，則該公司×1年度的費用為何？(3)×1年度增加投資$60,000，則宏康公司×1年度的淨利為何？(4)×1年度內發放現金股利$70,000，宏康公司×1年度的費用總計為$200,000，則該公司×1年度總收入為何？", "options": {}, "answer": "(1) 年底權益=560,000−260,000=300,000；×1年度淨利(損)=300,000−340,000=(40,000)。(2) ∵×1年度淨損=40,000 ∴×1年度費用=320,000+40,000=360,000。(3) 年底權益=560,000−260,000=300,000；×1年度淨利(損)=300,000−(340,000+60,000)=(100,000)。(4) 年底權益=560,000−260,000=300,000；×1年度淨利(損)=300,000+70,000−340,000=30,000；×1年度總收入=30,000+200,000=230,000。", "explanation": "(1) 年底權益=560,000−260,000=300,000；×1年度淨利(損)=300,000−340,000=(40,000)。(2) ∵×1年度淨損=40,000 ∴×1年度費用=320,000+40,000=360,000。(3) 年底權益=560,000−260,000=300,000；×1年度淨利(損)=300,000−(340,000+60,000)=(100,000)。(4) 年底權益=560,000−260,000=300,000；×1年度淨利(損)=300,000+70,000−340,000=30,000；×1年度總收入=30,000+200,000=230,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第6題；解答出處: IMG_0356.HEIC"}, {"no": "1-計7", "type": "計算", "chapter": "第一章", "source_image": "IMG_0342.HEIC", "text": "試指出下列各項交易對會計五大要素之影響為何？（提示：五大要素：資產、負債、權益、收入及費用。）(1)股東投資現金，成立一商店。(2)以賒購方式購入辦公設備。(3)以成本出售土地，收現。(4)償還辦公設備賒欠款項。(5)支付本月電話費。(6)提供服務予客戶，收到現金。(7)購買辦公大樓，尚未付款。(8)償還交易(7)帳款。(9)現購運輸設備。", "options": {}, "answer": "交易對資產/負債/權益/收入/費用之影響：(1)資產+ 權益+；(2)資產+ 負債+；(3)無影響；(4)資產− 負債−；(5)資產− 權益− 費用+；(6)資產+ 權益+ 收入+；(7)資產+ 負債+；(8)資產− 負債+；(9)無影響。", "explanation": "交易對資產/負債/權益/收入/費用之影響：(1)資產+ 權益+；(2)資產+ 負債+；(3)無影響；(4)資產− 負債−；(5)資產− 權益− 費用+；(6)資產+ 權益+ 收入+；(7)資產+ 負債+；(8)資產− 負債+；(9)無影響。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第7題，去重：IMG_0341右頁同題；解答出處: IMG_0356.HEIC"}, {"no": "1-計8", "type": "計算", "chapter": "第一章", "source_image": "IMG_0342.HEIC", "text": "下表為智勝商店五項交易之記錄，試以文字簡單說明各項交易之內容。（資產=現金+應收帳款+文具用品+辦公設備；負債=應付票據+應付帳款；權益=股本+保留盈餘。期初餘額：現金$59,000、應收帳款$70,000、文具用品$30,000、辦公設備$320,000；應付票據$40,000、應付帳款$49,000、股本+保留盈餘$390,000。交易(1)+30,000/-30,000；(2)+50,000/+50,000；(3)-49,000/-49,000；(4)-20,000/+10,000；(5)+100,000/+100,000。期末：$120,000+$40,000+$60,000+$370,000=$90,000+$10,000+$390,000+$100,000）", "options": {}, "answer": "(1) 債務人還款，收到現金$30,000。(2) 購入辦公設備 $50,000，給予票據。(3) 償還欠款 $49,000。(4) 購入文具用品 $30,000，其中 $20,000 付現，$10,000 賒欠。(5) 提供服務，獲得現金 $100,000。", "explanation": "(1) 債務人還款，收到現金$30,000。(2) 購入辦公設備 $50,000，給予票據。(3) 償還欠款 $49,000。(4) 購入文具用品 $30,000，其中 $20,000 付現，$10,000 賒欠。(5) 提供服務，獲得現金 $100,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第8題；解答出處: IMG_0356.HEIC, IMG_0357.HEIC"}, {"no": "1-計9", "type": "計算", "chapter": "第一章", "source_image": "IMG_0342.HEIC", "text": "試指出下列各項屬於會計五大要素的資產、負債、權益、收入及費用哪一類別？(1)運輸設備。(2)顧客賒欠款項。(3)股東的投資。(4)提供服務給顧客賺取收入。(5)支付水電瓦斯費。(6)賒欠供應商款項。(7)開給供應商未付款的票據。", "options": {}, "answer": "(1)資產 (2)資產 (3)權益 (4)收入 (5)費用 (6)負債 (7)負債。", "explanation": "(1)資產 (2)資產 (3)權益 (4)收入 (5)費用 (6)負債 (7)負債。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第9題；解答出處: IMG_0357.HEIC"}, {"no": "2-問1", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "交易的意義？", "options": {}, "answer": "交易是指企業與其他個體之間而發生的經濟活動事項，足以引起資產、負債及權益變動者。", "explanation": "交易是指企業與其他個體之間而發生的經濟活動事項，足以引起資產、負債及權益變動者。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第1題；解答出處: IMG_0357.HEIC"}, {"no": "2-問2", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂會計要素？請簡述之。", "options": {}, "answer": "會計要素為資產、負債、權益、收入與費用五大類。其中，資產、負債及權益三項為資產負債表的組成要素，收入與費用為損益表的組成要素。", "explanation": "會計要素為資產、負債、權益、收入與費用五大類。其中，資產、負債及權益三項為資產負債表的組成要素，收入與費用為損益表的組成要素。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第2題；解答出處: IMG_0357.HEIC"}, {"no": "2-問3", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "五大會計要素的定義？請簡述之。", "options": {}, "answer": "五大會計要素為資產、負債、權益、收益與費損五大類。其定義為：(1) 資產：指企業所擁有之經濟資源，能以貨幣加以衡量，能產生未來經濟效益流入者。(2) 負債：指企業由於過去交易所產生具有未來的經濟義務，必須能以貨幣衡量，且未來必須以提供勞務償還或產生經濟資源流出者。(3) 權益：指股東主對於企業剩餘資產的請求權，又稱為淨值或淨資產，即資產減負債後的餘額。(4) 收益：收益包括收入與利益。其中，收入指企業出售商品或提供勞務與顧客所獲得的代價。利益指非屬於收入部份，由企業處分廠房、設備及投資等出售所得價款高於其帳面價值的部份，稱為利益。(5) 費損：費損包括費用與損失。其中，費用指企業賺取收入過程中，所負擔的代價。損失與利益相反，由於企業處分廠房、設備及投資等可能屬於營業活動或非營業活動所產生的出售所得價款低於其帳面價值的部份，稱為損失。", "explanation": "五大會計要素為資產、負債、權益、收益與費損五大類。其定義為：(1) 資產：指企業所擁有之經濟資源，能以貨幣加以衡量，能產生未來經濟效益流入者。(2) 負債：指企業由於過去交易所產生具有未來的經濟義務，必須能以貨幣衡量，且未來必須以提供勞務償還或產生經濟資源流出者。(3) 權益：指股東主對於企業剩餘資產的請求權，又稱為淨值或淨資產，即資產減負債後的餘額。(4) 收益：收益包括收入與利益。其中，收入指企業出售商品或提供勞務與顧客所獲得的代價。利益指非屬於收入部份，由企業處分廠房、設備及投資等出售所得價款高於其帳面價值的部份，稱為利益。(5) 費損：費損包括費用與損失。其中，費用指企業賺取收入過程中，所負擔的代價。損失與利益相反，由於企業處分廠房、設備及投資等可能屬於營業活動或非營業活動所產生的出售所得價款低於其帳面價值的部份，稱為損失。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第3題；解答出處: IMG_0357.HEIC"}, {"no": "2-問4", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂借貸法則？請簡述之。", "options": {}, "answer": "依會計恆等式的原理、會計五大要素及左借右貸的關係，發展出一套記帳法則，稱為「借貸法則」，其規定如圖示：資產類帳戶左方(借方)+右方(貸方)−(正常為借餘)；負債類帳戶左方(借方)−右方(貸方)+(正常為貸餘)；權益類帳戶左方(借方)−右方(貸方)+(正常為貸餘)；費損類帳戶左方(借方)+右方(貸方)−(正常為借餘)；收益類帳戶左方(借方)−右方(貸方)+(正常為貸餘)。", "explanation": "依會計恆等式的原理、會計五大要素及左借右貸的關係，發展出一套記帳法則，稱為「借貸法則」，其規定如圖示：資產類帳戶左方(借方)+右方(貸方)−(正常為借餘)；負債類帳戶左方(借方)−右方(貸方)+(正常為貸餘)；權益類帳戶左方(借方)−右方(貸方)+(正常為貸餘)；費損類帳戶左方(借方)+右方(貸方)−(正常為借餘)；收益類帳戶左方(借方)−右方(貸方)+(正常為貸餘)。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第4題；解答出處: IMG_0357.HEIC, IMG_0358.HEIC"}, {"no": "2-問5", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂借貸與貸餘？請簡述之。", "options": {}, "answer": "由上圖可知，會計恆等式的左邊為資產，負債及權益在等式的右邊。資產的T字帳，左邊表資產增加為借方或借記，右邊表資產減少為貸方或貸記；負債及權益的T字帳，左邊表負債及權益減少為借方或借記，右邊表負債及權益增加為貸方或貸記。\n\n財務報表的每一會計科目都設立一個帳戶，當帳戶借方總額與貸方總額的差額稱為帳戶餘額。若借方總額大於貸方總額時，其差額稱為「借餘」；借方總額小於貸方總額時，其差額則稱為「貸餘」。", "explanation": "由上圖可知，會計恆等式的左邊為資產，負債及權益在等式的右邊。資產的T字帳，左邊表資產增加為借方或借記，右邊表資產減少為貸方或貸記；負債及權益的T字帳，左邊表負債及權益減少為借方或借記，右邊表負債及權益增加為貸方或貸記。\n\n財務報表的每一會計科目都設立一個帳戶，當帳戶借方總額與貸方總額的差額稱為帳戶餘額。若借方總額大於貸方總額時，其差額稱為「借餘」；借方總額小於貸方總額時，其差額則稱為「貸餘」。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第5題；對應解答本題號：2-問5、2-問6；解答出處: IMG_0358.HEIC"}, {"no": "2-問6", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂複式簿記？請簡述之。", "options": {}, "answer": "企業的任何一筆交易均不影響會計等式的恆等，借方與貸方金額必須相等，當彙總所有的交易記錄，可發現借方總金額與貸方總金額相等，此稱為借貸平衡原理，即「有借必有貸，借貸金額必相等」，此種企業交易記錄方法，也被稱為「複式簿記」。", "explanation": "企業的任何一筆交易均不影響會計等式的恆等，借方與貸方金額必須相等，當彙總所有的交易記錄，可發現借方總金額與貸方總金額相等，此稱為借貸平衡原理，即「有借必有貸，借貸金額必相等」，此種企業交易記錄方法，也被稱為「複式簿記」。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第6題；對應解答本題號：2-問7；解答出處: IMG_0358.HEIC"}, {"no": "2-問7", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂日記簿及其功用？請簡述之。", "options": {}, "answer": "日記簿係依企業交易發生的時序，逐筆登載的記錄簿，此帳簿也稱為序時帳簿。其功用為：(1) 將同一筆交易的借貸紀錄彙記一起，便於比較檢查及減少錯誤發生。(2) 將交易依發生時序記錄，便於資料的查詢及了解交易全貌。(3) 日記簿所記載的之各科目，可以作為過帳的依據。", "explanation": "日記簿係依企業交易發生的時序，逐筆登載的記錄簿，此帳簿也稱為序時帳簿。其功用為：(1) 將同一筆交易的借貸紀錄彙記一起，便於比較檢查及減少錯誤發生。(2) 將交易依發生時序記錄，便於資料的查詢及了解交易全貌。(3) 日記簿所記載的之各科目，可以作為過帳的依據。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第7題；對應解答本題號：2-問8；解答出處: IMG_0358.HEIC"}, {"no": "2-問8", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂過帳？過帳的步驟？", "options": {}, "answer": "過帳係將日記簿中的分錄，依借貸記錄轉登錄於分類帳的各個帳戶。每一筆分錄過帳，應按日記簿中記錄順序，依序先過借方科目，再過貸方科目，過到分類帳戶。其步驟如下：(1) 將日記簿中第一筆分錄日期，轉記至分類帳的日期欄。(2) 將該筆分錄的借方科目金額，過入至分類帳的借方金額欄。(3) 將該筆分錄所在日記簿內頁次，填寫至分類帳的日頁欄。(4) 將分類帳的頁次，填寫至日記簿的類頁欄。分錄的貸方記錄，按上述(1)~(4)的4個步驟的相同作法，過入分類帳。", "explanation": "過帳係將日記簿中的分錄，依借貸記錄轉登錄於分類帳的各個帳戶。每一筆分錄過帳，應按日記簿中記錄順序，依序先過借方科目，再過貸方科目，過到分類帳戶。其步驟如下：(1) 將日記簿中第一筆分錄日期，轉記至分類帳的日期欄。(2) 將該筆分錄的借方科目金額，過入至分類帳的借方金額欄。(3) 將該筆分錄所在日記簿內頁次，填寫至分類帳的日頁欄。(4) 將分類帳的頁次，填寫至日記簿的類頁欄。分錄的貸方記錄，按上述(1)~(4)的4個步驟的相同作法，過入分類帳。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第8題；對應解答本題號：2-問9；解答出處: IMG_0358.HEIC"}, {"no": "2-問9", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂試算的意義？試算的功能？請簡述之。", "options": {}, "answer": "試算係根據借貸平衡原理，將分類帳中各帳戶借方總額及貸方總額或餘額加以彙總列表，計算其借貸是否平衡，以驗證分錄及過帳工作是否有誤的會計程序。試算的功能有二：(1) 驗證帳務處理有無錯誤；(2) 簡化財務報表編製的工作。", "explanation": "試算係根據借貸平衡原理，將分類帳中各帳戶借方總額及貸方總額或餘額加以彙總列表，計算其借貸是否平衡，以驗證分錄及過帳工作是否有誤的會計程序。試算的功能有二：(1) 驗證帳務處理有無錯誤；(2) 簡化財務報表編製的工作。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第9題；對應解答本題號：2-問10；解答出處: IMG_0358.HEIC"}, {"no": "2-問10", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "試說明試算表的格式與編製步驟？請簡述之。", "options": {}, "answer": "試算表的格式包括表首與表身兩部份。(1) 表首包括企業名稱、報表名稱及編表日期。(2) 表身包括會計科目名稱、借方餘額及貸方餘額。其中，編表日期為編表的特定日期，而不是一段時間。會計科目名稱、借方餘額及貸方餘額等三欄，必須按資產、負債、權益、收入與費用的依序排列。試算表的編製步驟：(1) 填寫試算表的表首。(2) 填寫試算表的表身，即，將分類帳中各帳戶名稱、借方餘額及貸方餘額，按資產、負債、權益、收入與費用的排序，填入試算表。(3) 將試算表中借方餘額及貸方餘額分別加總，若借方總額等於貸方總額，則試算表完成。", "explanation": "試算表的格式包括表首與表身兩部份。(1) 表首包括企業名稱、報表名稱及編表日期。(2) 表身包括會計科目名稱、借方餘額及貸方餘額。其中，編表日期為編表的特定日期，而不是一段時間。會計科目名稱、借方餘額及貸方餘額等三欄，必須按資產、負債、權益、收入與費用的依序排列。試算表的編製步驟：(1) 填寫試算表的表首。(2) 填寫試算表的表身，即，將分類帳中各帳戶名稱、借方餘額及貸方餘額，按資產、負債、權益、收入與費用的排序，填入試算表。(3) 將試算表中借方餘額及貸方餘額分別加總，若借方總額等於貸方總額，則試算表完成。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第10題；對應解答本題號：2-問11；解答出處: IMG_0358.HEIC"}, {"no": "2-問11", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂試算的限制？", "options": {}, "answer": "試算的限制係為無法由試算表的編製發現不影響借貸平衡的錯誤。通常，無法被發現誤的錯誤為：(1) 交易分錄重複入帳或過帳：企業的交易事項被重複記入日記簿或被重複過至分類帳。(2) 交易漏記或漏過帳：企業交易事項未被記入日記簿，或已記入，但遺漏過帳。(3) 會計科目記錯：例如：用錯會計科目或科目借貸顛倒等。(4) 借貸方發生相同金額的錯誤：例如：借貸方發生同額增加或同額減少的錯誤。(5) 借方或貸方發生相互抵銷的錯誤：例如：應收帳款多計 $15,000，預付費用少計 $15,000；應付帳款多計 $10,000，應付票據少計 $10,000。", "explanation": "試算的限制係為無法由試算表的編製發現不影響借貸平衡的錯誤。通常，無法被發現誤的錯誤為：(1) 交易分錄重複入帳或過帳：企業的交易事項被重複記入日記簿或被重複過至分類帳。(2) 交易漏記或漏過帳：企業交易事項未被記入日記簿，或已記入，但遺漏過帳。(3) 會計科目記錯：例如：用錯會計科目或科目借貸顛倒等。(4) 借貸方發生相同金額的錯誤：例如：借貸方發生同額增加或同額減少的錯誤。(5) 借方或貸方發生相互抵銷的錯誤：例如：應收帳款多計 $15,000，預付費用少計 $15,000；應付帳款多計 $10,000，應付票據少計 $10,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第11題；對應解答本題號：2-問12；解答出處: IMG_0358.HEIC, IMG_0359.HEIC"}, {"no": "2-問12", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "試算表之功能為何？", "options": {}, "answer": "試算表的功用為：(1) 檢驗帳冊的記載或計算有無錯誤。(2) 便於財務報表的編製。(3) 可概略明瞭企業之財務狀況及經營結果。", "explanation": "試算表的功用為：(1) 檢驗帳冊的記載或計算有無錯誤。(2) 便於財務報表的編製。(3) 可概略明瞭企業之財務狀況及經營結果。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第12題；對應解答本題號：2-問13；解答出處: IMG_0359.HEIC"}, {"no": "2-問13", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂複式分錄？", "options": {}, "answer": "分錄由三個以上的會計科目，例如：一借二貸或二借一貸或二借二貸等所組成，則稱為複合分錄。分錄由二個會計科目，一借一貸所組成，稱為簡單分錄。", "explanation": "分錄由三個以上的會計科目，例如：一借二貸或二借一貸或二借二貸等所組成，則稱為複合分錄。分錄由二個會計科目，一借一貸所組成，稱為簡單分錄。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第13題；對應解答本題號：2-問14；解答出處: IMG_0359.HEIC"}, {"no": "2-問14", "type": "簡答", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "何謂簡單分錄？", "options": {}, "answer": "分錄由三個以上的會計科目，例如：一借二貸或二借一貸或二借二貸等所組成，則稱為複合分錄。分錄由二個會計科目，一借一貸所組成，稱為簡單分錄。", "explanation": "分錄由三個以上的會計科目，例如：一借二貸或二借一貸或二借二貸等所組成，則稱為複合分錄。分錄由二個會計科目，一借一貸所組成，稱為簡單分錄。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第14題；解答出處: IMG_0359.HEIC"}, {"no": "2-是1", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "交易發生會使會計恆等式的兩邊發生同數額的增減。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。交易可能使恆等式兩邊同增同減（如賒購資產），也可能只在同一邊內一增一減（如現金購買設備，資產內部互換），並非每次都使兩邊同數額增減。關鍵概念：交易型態多元，恆等式仍保持平衡。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第1題；解答出處: IMG_0359.HEIC"}, {"no": "2-是2", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "一筆交易會影響兩個或兩個以上會計科目。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。複式簿記要求每筆交易同時記錄兩個或以上會計科目（一借一貸或多借多貸），金額借貸相等，以表達交易的雙面影響。關鍵概念：複式簿記＝雙面記錄。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第2題；解答出處: IMG_0359.HEIC"}, {"no": "2-是3", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "複式簿記之特性，就是交易發生後，必須記錄一借一貸，而且借貸金額必相等。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。複式簿記的核心是「有借必有貸、借貸必相等」，但分錄並不限於「一借一貸」，亦可為一借多貸、多借一貸或多借多貸的複合分錄。關鍵概念：複式簿記強調借貸平衡，不限科目數。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第3題；解答出處: IMG_0359.HEIC"}, {"no": "2-是4", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "所有權益帳戶之借方均表示增加，貸方則表示減少。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。權益類帳戶（如業主資本、保留盈餘）是貸方增加、借方減少；借方增加的是資產與費用類帳戶，不可混淆。關鍵概念：借貸法則依帳戶類型決定增減方向。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第4題；解答出處: IMG_0359.HEIC"}, {"no": "2-是5", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "企業除銷商品是屬於現金交易。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。除（賒）銷商品是先認列收入與應收帳款、日後才收現的信用交易，並非當場收付現金的現金交易。關鍵概念：賒銷＝信用交易，非現金交易。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第5題；解答出處: IMG_0359.HEIC"}, {"no": "2-是6", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "會計科目就是帳戶的名稱。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。會計科目是分類帳中各帳戶的名稱，用以歸類同質性的交易；帳戶則是記載該科目增減變動與餘額的工具。關鍵概念：會計科目即帳戶名稱。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第6題；解答出處: IMG_0359.HEIC"}, {"no": "2-是7", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "任何交易之產生，均不會影響會計方程式恆等之關係。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。複式簿記對每筆交易借貸等額入帳，不論交易如何組合，「資產＝負債＋權益」的恆等關係永遠成立。關鍵概念：任何交易皆不破壞恆等式。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第7題；解答出處: IMG_0359.HEIC"}, {"no": "2-是8", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "債務清償時，將會使負債金額減少，一定會影響資產之總額。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。清償債務通常以現金或其他資產償付，故負債減少同時資產也減少；除非舉新債還舊債，一般償債必伴隨資產減少。關鍵概念：償債＝資產與負債同減。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第8題；解答出處: IMG_0359.HEIC"}, {"no": "2-是9", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0343.HEIC", "text": "費用大於收入會使權益減少。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。當期費用大於收入產生淨損，淨損會自保留盈餘（權益）中扣除，故使業主權益減少。關鍵概念：淨損減少保留盈餘。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第9題；解答出處: IMG_0359.HEIC"}, {"no": "2-是10", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "日記簿記帳的時間通常設定為每兩個月一次。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。日記簿是序時帳簿，應於交易發生當時隨即逐筆記錄，而非每兩個月才記一次；拖延會破壞序時性與正確性。關鍵概念：日記簿隨時記錄，按時序排列。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第10題；解答出處: IMG_0359.HEIC"}, {"no": "2-是11", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "日記簿分錄所用的會計科目名稱，和分類帳內各帳戶的名稱相同。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。日記簿分錄所使用的會計科目，就是日後過帳時分類帳各帳戶的名稱，兩者必須一致，過帳才能順利歸類。關鍵概念：日記簿與分類帳科目名稱一致。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第11題；解答出處: IMG_0359.HEIC"}, {"no": "2-是12", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "企業所有的交易一開始必須記錄於分類帳。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。交易發生時應先記入日記簿（分錄），再依日記簿分錄過帳至分類帳；順序不可顛倒。關鍵概念：分錄先於過帳，日記簿為分錄起點。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第12題；解答出處: IMG_0359.HEIC"}, {"no": "2-是13", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "試算表上各科目的排列次序，係依其餘額的大小排列。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。試算表上科目係依資產、負債、權益、收入、費用的會計要素分類及流動性排列，並非按餘額大小。關鍵概念：試算表按會計要素分類排列。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第13題；解答出處: IMG_0359.HEIC"}, {"no": "2-是14", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "應記借記費用事項於資產事項，試算表總額仍相等。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。將應借記費用的事項誤借記至資產，借貸雙方金額仍相等，故試算表借貸總額仍平衡——這正是試算表無法發現的「科目誤用」錯誤。關鍵概念：試算表只能查借貸不平衡，查不出科目誤用。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第14題；解答出處: IMG_0359.HEIC"}, {"no": "2-是15", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "每一分錄的借貸金額皆相等，試算表的借貸總額也必相等。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。每一分錄借貸金額相等，全部過帳後各帳戶借貸方加總亦相等，故試算表借方總額必等於貸方總額。關鍵概念：借貸平衡是試算表的基礎。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第15題；解答出處: IMG_0359.HEIC"}, {"no": "2-是16", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "若分錄正確，則試算表一定平衡。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。分錄正確不代表試算表一定平衡；過帳過程中若漏過一邊、方向顛倒或加總錯誤，仍會使試算表不平衡。關鍵概念：分錄正確≠過帳正確，試算表仍可能不平衡。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第16題；解答出處: IMG_0359.HEIC"}, {"no": "2-選1", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "下列何者屬於會計交易事項？", "options": {"(1)": "董事長辭職", "(2)": "賒購商品", "(3)": "簽訂商品合約", "(4)": "更換總經理。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。賒購商品會使存貨（資產）與應付帳款（負債）同時增加，是可貨幣衡量的會計交易事項；董事長辭職、簽訂合約、更換總經理均不影響財務狀況，不予入帳。關鍵概念：會計事項須能以貨幣衡量並影響財務狀況。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記2；解答出處: IMG_0359.HEIC"}, {"no": "2-選2", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "會計恆等式是表示", "options": {"(1)": "會計要素的關係", "(2)": "借貸法則的關係", "(3)": "平衡原則", "(4)": "無特殊意義。"}, "answer": "(1)", "explanation": "〔AI 解析：解答本未印〕正確答案為(1)。會計恆等式「資產＝負債＋權益」在於表達資產、負債、權益三大會計要素之間的恆等關係；借貸法則只是其記帳規則的展現。關鍵概念：恆等式表達會計要素間的關係。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記1；解答出處: IMG_0359.HEIC"}, {"no": "2-選3", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "何時會產生損失？", "options": {"(1)": "資產大於負債", "(2)": "資產大於收入", "(3)": "費用大於收入", "(4)": "收入大於費用。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。當期費用大於收入，差額即為淨損（損失）；收入大於費用則為淨利。關鍵概念：損益決定於收入與費用之比較。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記3；解答出處: IMG_0359.HEIC"}, {"no": "2-選4", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "根據借貸法則，貸方用來記錄", "options": {"(1)": "資產的增加", "(2)": "收益的增加", "(3)": "負債的減少", "(4)": "費用的增加。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。依借貸法則，貸方用來記錄負債增加、權益增加、收益（收入）增加，以及資產減少與費用減少；資產增加、費用增加、負債減少均記借方。關鍵概念：貸方記負債/權益/收入增加。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記2；解答出處: IMG_0359.HEIC"}, {"no": "2-選5", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "有借必有貸，借貸必相等，稱為", "options": {"(1)": "借貸原理", "(2)": "借貸法則", "(3)": "複式簿記原理", "(4)": "授受行為。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。「有借必有貸，借貸必相等」正是複式簿記的基本原理；它要求每筆交易雙面記錄並保持金額平衡。關鍵概念：複式簿記原理＝借貸平衡。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記3；解答出處: IMG_0359.HEIC"}, {"no": "2-選6", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "正常餘額為借餘之科目為", "options": {"(1)": "資產科目", "(2)": "權益", "(3)": "收入科目", "(4)": "以上皆非。"}, "answer": "(1)", "explanation": "〔AI 解析：解答本未印〕正確答案為(1)。資產類帳戶借方記增加、貸方記減少，正常餘額為借餘；權益與收入類為貸餘。關鍵概念：資產正常餘額在借方。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記1；解答出處: IMG_0359.HEIC"}, {"no": "2-選7", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "當資產減少時，可能會影響之會計要素為", "options": {"(1)": "負債增加", "(2)": "收入增加", "(3)": "費用增加", "(4)": "權益增加。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。當資產（如現金）因支付費用而減少時，對應科目是費用增加（借記費用、貸記現金）；負債增加、收入增加、權益增加皆不會伴隨資產減少的必然結果。關鍵概念：支付費用＝資產減少、費用增加。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記3；解答出處: IMG_0359.HEIC"}, {"no": "2-選8", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "企業營業發生嚴重虧損時，則會計恆等式將", "options": {"(1)": "平衡", "(2)": "不平衡", "(3)": "不一定", "(4)": "以上皆是。"}, "answer": "(1)", "explanation": "〔AI 解析：解答本未印〕正確答案為(1)。不論企業盈餘或嚴重虧損，每筆交易皆借貸等額入帳，會計恆等式永遠平衡；虧損只是使權益減少而已。關鍵概念：恆等式永遠平衡，與盈虧無關。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記1；解答出處: IMG_0359.HEIC"}, {"no": "2-選9", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "下列何者會使總資產與總負債同時減少？", "options": {"(1)": "現金購買機械", "(2)": "償還銀行借款", "(3)": "出售商品", "(4)": "應收帳款收現。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。償還銀行借款時，借記銀行借款（負債減少）、貸記現金（資產減少），使總資產與總負債同時減少；現金購機械、出售商品、應收帳款收現皆為資產內部互換或資產與收入變動，不影響負債。關鍵概念：償債使資產與負債同減。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記2；解答出處: IMG_0359.HEIC"}, {"no": "2-選10", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "下列何者不屬於負債類會計科目？", "options": {"(1)": "預收收入", "(2)": "應付帳款", "(3)": "應收帳款", "(4)": "銀行借款。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。應收帳款是企業對客戶的債權，屬資產類；預收收入、應付帳款、銀行借款皆為企業對他人的負債。關鍵概念：應收款是資產，應付款是負債。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記3；解答出處: IMG_0359.HEIC"}, {"no": "2-選11", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "下列借貸法則的敘述何者不正確？", "options": {"(1)": "資產增加借記，負債增加貸記", "(2)": "資產增加借記，負債增加借記", "(3)": "負債減少借記，收入增加貸記", "(4)": "資產增加借記，權益增加貸記。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。依借貸法則，資產增加借記正確，但「負債增加借記」為錯誤——負債增加應貸記；其餘三項敘述均符合借貸法則。關鍵概念：負債增加貸記，不可借記。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記2(有劃記)；解答出處: IMG_0359.HEIC"}, {"no": "2-選12", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "日記簿記錄之時間何者正確？", "options": {"(1)": "每日一次", "(2)": "有空時方記錄", "(3)": "每月一次", "(4)": "交易發生時隨即記錄。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕正確答案為(4)。日記簿為序時帳簿，應於每筆交易發生當時隨即分錄，以確保時序正確、便於查考；非每日、每月或有空才記。關鍵概念：日記簿隨交易發生即時記錄。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記4；解答出處: IMG_0359.HEIC"}, {"no": "2-選13", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "日記簿的功能不包括下列何者？", "options": {"(1)": "減少記帳錯誤發生", "(2)": "便於瞭解交易全貌", "(3)": "作為過帳的依據", "(4)": "作為編製財務報表的依據。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕正確答案為(4)。日記簿可減少記帳錯誤、呈現交易全貌，並作為過帳至分類帳的依據；但編製財務報表的依據是調整後試算表（或分類帳彙總），不是日記簿。關鍵概念：日記簿是分錄與過帳依據，非編表依據。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記4；解答出處: IMG_0359.HEIC"}, {"no": "2-選14", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "下列何者為正確之敘述？", "options": {"(1)": "交易發生，根據借貸法則，依序記入分類帳簿，謂之分錄", "(2)": "據分類帳，依交易之性質，歸類於日記簿，謂之過帳", "(3)": "若所有分錄均已過帳，則日記簿上之借貸方總數必與分類帳上之借貸方總數相等", "(4)": "驗證記載與計算有無錯誤，謂之試算。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕正確答案為(4)。試算的目的即在驗證分錄與過帳的記載及加總有無錯誤。(1)(2)把分錄與過帳的順序搞反；(3)應為日記簿借貸總數與分類帳各帳戶借貸總數分別平衡，而非兩者直接相等。關鍵概念：試算＝驗證借貸平衡與記載正確。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記4；解答出處: IMG_0359.HEIC"}, {"no": "2-選15", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0344.HEIC", "text": "試算表的編表次數為", "options": {"(1)": "每月一次", "(2)": "每季一次", "(3)": "每年一次", "(4)": "依實際需要而定。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕正確答案為(4)。試算表並無固定編製時點，企業得視實際需要（如月結、自核、改帳前）隨時編製，非限制每月、每季或每年一次。關鍵概念：試算表按需編製。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記4；解答出處: IMG_0359.HEIC"}, {"no": "2-選16", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0345.HEIC", "text": "試算表的功用在於檢查何者錯誤？", "options": {"(1)": "分錄", "(2)": "過帳", "(3)": "分錄與過帳", "(4)": "以上皆是。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕正確答案為(4)。試算表可檢查分錄借貸是否平衡、過帳金額與方向是否正確，以及加總計算有無誤，故分錄與過帳的錯誤皆在其檢查範圍內。關鍵概念：試算表檢查分錄與過帳錯誤。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記4；解答出處: IMG_0359.HEIC"}, {"no": "2-選17", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0345.HEIC", "text": "分錄正確無誤則", "options": {"(1)": "試算表必定平衡", "(2)": "過帳一定正確", "(3)": "試算表不一定平衡", "(4)": "以上皆是。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。分錄正確僅代表日記簿借貸平衡；但若過帳時漏過、重過、方向顛倒或加總錯誤，試算表仍會不平衡，故試算表不一定平衡。關鍵概念：分錄正確≠過帳正確。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記3；解答出處: IMG_0359.HEIC"}, {"no": "2-選18", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0345.HEIC", "text": "下列何項為試算無法被發現的錯誤？", "options": {"(1)": "某帳戶的借方過帳至帳戶之貸方", "(2)": "任一帳戶加總錯誤", "(3)": "費用科目誤記為資產科目", "(4)": "借方過帳，但卻遺漏貸方過帳。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。費用誤記為資產科目時，借貸金額仍相等，試算表無法察覺；其餘三項都會造成借貸方金額不等或方向錯誤，可由試算表發現。關鍵概念：科目誤用但借貸平衡，試算表查不出。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記3；解答出處: IMG_0359.HEIC"}, {"no": "2-選19", "type": "選擇", "chapter": "第二章", "source_image": "IMG_0345.HEIC", "text": "在試算過程中，若發現會計記錄發生錯誤", "options": {"(1)": "不須處理，只要直接更改報表", "(2)": "應於發現時隨即更正", "(3)": "至期末時方做更正", "(4)": "註銷更正。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。發現會計記錄錯誤應立即以改正分錄更正，並同步更正日記簿與分類帳，不可拖延至期末或僅改報表而不改正帳。關鍵概念：錯誤應即時以改正分錄處理。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "學生手寫標記2；解答出處: IMG_0359.HEIC"}, {"no": "2-計1", "type": "計算", "chapter": "第二章", "source_image": "IMG_0345.HEIC", "text": "下列何者應記入帳戶的借方？何者應記入帳戶的貸方？(1)收入的增加。(2)資產的增加。(3)應收帳款的減少。(4)負債的減少。(5)權益的增加。(6)費用的減少。(7)商品的增加。(8)應付票據的增加。(9)辦公設備的減少。(10)預收款项的減少。", "options": {}, "answer": "(1)貸方 (2)借方 (3)貸方 (4)借方 (5)貸方 (6)貸方 (7)借方 (8)貸方 (9)貸方 (10)借方。", "explanation": "(1)貸方 (2)借方 (3)貸方 (4)借方 (5)貸方 (6)貸方 (7)借方 (8)貸方 (9)貸方 (10)借方。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第1題；解答出處: IMG_0359.HEIC"}, {"no": "2-計2", "type": "計算", "chapter": "第二章", "source_image": "IMG_0345.HEIC", "text": "以下為日德公司×1年8月份發生之交易，試說明(1)每筆交易應借及應貸的帳戶；(2)並請用T字帳表達。(1)股東投資現金$350,000，現金成立日德公司。(2)以現金購入機器設備$85,000。(3)購買辦公設備$45,000，付現$10,000，餘暫欠。(4)提供服務賺得收入共$80,000，收現$30,000，餘$50,000暫欠。(5)支付房租費用$10,000。(6)支付該月水電費$2,000。(7)發放股東股利$3,500。(8)收取顧客所欠款項$50,000。(9)預收顧客一筆款項$10,000，預計於下個月開始提供服務。(10)賒購辦公用品一批$1,500。(11)支付員工薪資$10,000。", "options": {}, "answer": "(1) ①現金 350,000 / 股本 350,000；②機器設備 85,000 / 現金 85,000；③辦公設備 45,000 / 現金 10,000、應付帳款 35,000；④現金 30,000、應收帳款 50,000 / 服務收入 80,000；⑤房租費用 10,000 / 現金 10,000；⑥水電費用 2,000 / 現金 2,000；⑦股利 3,500 / 現金 3,500；⑧現金 50,000 / 應收帳款 50,000；⑨現金 10,000 / 預收收入 10,000；⑩辦公用品 1,500 / 應付帳款 1,500；⑪薪資費用 10,000 / 現金 10,000。(2) 現金T帳戶借方：350,000+30,000+50,000+10,000；貸方：85,000+10,000+10,000+2,000+3,500+10,000；借餘319,500。", "explanation": "(1) ①現金 350,000 / 股本 350,000；②機器設備 85,000 / 現金 85,000；③辦公設備 45,000 / 現金 10,000、應付帳款 35,000；④現金 30,000、應收帳款 50,000 / 服務收入 80,000；⑤房租費用 10,000 / 現金 10,000；⑥水電費用 2,000 / 現金 2,000；⑦股利 3,500 / 現金 3,500；⑧現金 50,000 / 應收帳款 50,000；⑨現金 10,000 / 預收收入 10,000；⑩辦公用品 1,500 / 應付帳款 1,500；⑪薪資費用 10,000 / 現金 10,000。(2) 現金T帳戶借方：350,000+30,000+50,000+10,000；貸方：85,000+10,000+10,000+2,000+3,500+10,000；借餘319,500。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第2題；解答出處: IMG_0359.HEIC, IMG_0360.HEIC"}, {"no": "2-計3", "type": "計算", "chapter": "第二章", "source_image": "IMG_0345.HEIC", "text": "佳諭公司×2年2月份交易如下：2月2日股東們投資現金$200,000，開設佳諭公司。3日以現金$40,000購入二手貨車一部，供營業使用。8日向日德公司賒購用品$5,000。11日為顧客提供服務，開出帳單$28,000。18日為擴展服務業務，支付廣告費$10,000。20日顧客支付11日所欠之帳單。23日償還前日欠日德商店貨款。28日以現金$10,000支付股利。試編製佳諭公司×2年2月份應有之分錄。", "options": {}, "answer": "2月2日 現金 200,000 / 股本 200,000；2月3日 運輸設備 40,000 / 現金 40,000；2月8日 用品 5,000 / 應付帳款 5,000；2月11日 應收帳款 28,000 / 服務收入 28,000；2月18日 廣告費用 10,000 / 現金 10,000；2月20日 現金 28,000 / 應收帳款 28,000；2月23日 應付帳款 5,000 / 現金 5,000；2月28日 股利 10,000 / 現金 10,000。", "explanation": "2月2日 現金 200,000 / 股本 200,000；2月3日 運輸設備 40,000 / 現金 40,000；2月8日 用品 5,000 / 應付帳款 5,000；2月11日 應收帳款 28,000 / 服務收入 28,000；2月18日 廣告費用 10,000 / 現金 10,000；2月20日 現金 28,000 / 應收帳款 28,000；2月23日 應付帳款 5,000 / 現金 5,000；2月28日 股利 10,000 / 現金 10,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第3題；解答出處: IMG_0360.HEIC"}, {"no": "2-計4", "type": "計算", "chapter": "第二章", "source_image": "IMG_0345.HEIC", "text": "試將下列會計資料依照會計處理程序，按順序排列：(1)企業交易的發生。(2)自分類帳編製財務報表。(3)將交易資料記入日記簿。(4)編製會計憑證。(5)將交易記錄自日記簿過帳至分類帳。", "options": {}, "answer": "(1)→(4)→(3)→(5)→(2)", "explanation": "(1)→(4)→(3)→(5)→(2)", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第4題；解答出處: IMG_0360.HEIC"}, {"no": "2-計5", "type": "計算", "chapter": "第二章", "source_image": "IMG_0346.HEIC", "text": "橫濱公司新聘一位無經驗的簿記人員，編製了下列試算表，但借貸卻無法平衡。假設所有科目餘額皆為正常餘額，試編製正確的試算表。（原試算表：借方—現金$188,000、預付保險費$45,000、應付帳款$40,000、預收收入$32,000、股本$160,000、股利$45,000、服務收入$256,000、薪資費用$186,000、租金費用$24,000，合計$406,000；貸方$570,000）", "options": {}, "answer": "橫濱公司試算表 ×1年12月31日：借方—現金 $188,000、預付保險費 45,000、股利 45,000、薪資費用 186,000、租金費用 24,000；合計 $488,000。貸方—應付帳款 $40,000、預收收入 32,000、股本 160,000、服務收入 256,000；合計 $488,000。", "explanation": "橫濱公司試算表 ×1年12月31日：借方—現金 $188,000、預付保險費 45,000、股利 45,000、薪資費用 186,000、租金費用 24,000；合計 $488,000。貸方—應付帳款 $40,000、預收收入 32,000、股本 160,000、服務收入 256,000；合計 $488,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第5題；解答出處: IMG_0360.HEIC"}, {"no": "2-計6", "type": "計算", "chapter": "第二章", "source_image": "IMG_0346.HEIC", "text": "有佳公司試算表的借貸方總額不相等，借方總額為$2,410,000，貸方總額為$2,400,000，檢查後發現下列錯誤：(1)以現金償還帳款$72,000，遺漏入帳。(2)現付郵電費$10,000，誤記為現付水電費。(3)應收帳款帳戶過帳時將借方$310,000，記為$320,000。(4)利息收入$20,000，誤記為利息支出。試依上列資料計算試算表借貸正確金額，並做必要更正分錄。", "options": {}, "answer": "借方總額 = $2,410,000−$72,000−$10,000 = $2,328,000。\n\n借$2,328,000", "explanation": "借方總額=$2,400,000-$72,000=$2,328,000。(1)應付帳款72,000/現金72,000；(2)郵電費用10,000/水電費用10,000；(3)不用作分錄——因為分錄無誤，過帳時應收帳款多記$10,000(=$320,000-$310,000)，因此$10,000作借方總額之減少；(4)利息支出20,000/利息收入20,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第6題；解答出處: IMG_0360.HEIC, IMG_0361.HEIC"}, {"no": "2-計7", "type": "計算", "chapter": "第二章", "source_image": "IMG_0346.HEIC", "text": "立德公司×1年12月31日分類帳上各科目餘額如下：應收票據$1,200,000；廣告費用$80,000；預收收入$200,000；現金$340,000；服務收入$1,900,000；郵電費用$10,000；股本$2,000,000；預付費用$1,200,000；薪資費用$600,000；辦公設備$600,000；水電費用$30,000；股利$40,000。試依各科目在分類帳出現的順序，編製×1年12月31日之試算表。", "options": {}, "answer": "借貸平衡 $4,100,000", "explanation": "立德公司 試算表 ×1年12月31日。借方：現金$340,000、應收票據1,200,000、辦公設備600,000、預付費用1,200,000、股利40,000、薪資費用600,000、廣告費用80,000、郵電費用10,000、水電費用30,000；貸方：預收收入$200,000、股本2,000,000、服務收入1,900,000。合計借方$4,100,000／貸方$4,100,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第7題；解答出處: IMG_0361.HEIC"}, {"no": "2-計8", "type": "計算", "chapter": "第二章", "source_image": "IMG_0346.HEIC", "text": "智勝公司會計人員於過帳時發生了下列錯誤。(1)現金借記$23,980，過帳時誤記為$29,380。(2)賒購文具用品$10,000，尚未入帳。(3)償還應付帳款$5,800，過帳時誤記應收帳款之借方。(4)賒購辦公設備$520,000，過帳時應付帳款貸方誤記為$502,000，機器設備過帳無誤。(5)借記薪資費用$40,000，重複過入薪資費用借方兩次。試就上述各項錯誤：(1)請問試算表是否平衡？(2)若不平衡，試問借方或貸方的金額何者較大，其差額？", "options": {}, "answer": "差額$63,400", "explanation": "(1)試算表借貸不平衡。(2)調整：①現金多記$5,400(借方$(5,400))；②文具用品少記$10,000(借方10,000)、應付費用少記$10,000(貸方10,000)；③應收帳款多記$5,800(貸方(5,800))、應付帳款多記$5,800(貸方(5,800))；④應付帳款少記$18,000(貸方18,000)；⑤薪資費用多記$40,000(借方(40,000))。合計借方$(41,200)／貸方$22,200。因此，試算表借方金額大於貸方金額，差額為$63,400(=$(41,200)-$22,200)。[逐項明細數字以印刷合計為準]", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第8題；解答出處: IMG_0361.HEIC"}, {"no": "2-計9", "type": "計算", "chapter": "第二章", "source_image": "IMG_0346.HEIC", "text": "日德公司因聘用一無經驗的會計人員，該會計人員記錄交易分錄時發生了下列錯誤，且所有的分錄都已過帳。(1)償還債權人之款項$9,800，記錄為借記應付帳款$8,900及貸記現金$8,900。(2)賒購文具用品$20,000，記錄為借記辦公設備$2,000及貸記應付帳款$2,000。試作：請協助日德公司會計人員製作更正分錄。", "options": {}, "answer": "(1)應付帳款900／現金900；(2)文具用品20,000／應付帳款18,000、辦公設備2,000。", "explanation": "(1)應付帳款900／現金900；(2)文具用品20,000／應付帳款18,000、辦公設備2,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第9題；解答出處: IMG_0361.HEIC"}, {"no": "2-計10", "type": "計算", "chapter": "第二章", "source_image": "IMG_0346.HEIC", "text": "京東房地產經紀公司×1年7月1日成立，並於7月份完成下列交易：7月1日投入現金$1,500,000成立京東房地產經紀公司。2日僱用業務員與總務人員，各二名，薪資各為$48,000。5日賒購辦公設備$350,000。8日成功仲介出售土地，向客戶開出仲介費帳單為$45,600。15日支付現金$150,000，償付部份7月5日賒購辦公設備之應付帳款。27日成功幫客戶仲介房屋出租，自該客戶收到現金$15,000。31日支付7月份之員工薪資$84,000。試作：編製京東房地產經紀公司×1年7月份交易之會計分錄。", "options": {}, "answer": "7月1日 現金1,500,000／股本1,500,000(記錄股東之原始投資)；7月2日 不用作會計分錄；7月5日 辦公設備350,000／應付帳款350,000(記錄購置辦公設備)；7月8日 應收帳款45,600／服務收入45,600(記錄服務收入)；7月15日 應付帳款150,000／現金150,000(償付部份購入辦公設備之應付帳款)；7月27日 現金15,000／服務收入15,000(提供服務、賺得收入)；7月31日 薪資費用84,000／現金84,000(支付員工薪資)。", "explanation": "7月1日 現金1,500,000／股本1,500,000(記錄股東之原始投資)；7月2日 不用作會計分錄；7月5日 辦公設備350,000／應付帳款350,000(記錄購置辦公設備)；7月8日 應收帳款45,600／服務收入45,600(記錄服務收入)；7月15日 應付帳款150,000／現金150,000(償付部份購入辦公設備之應付帳款)；7月27日 現金15,000／服務收入15,000(提供服務、賺得收入)；7月31日 薪資費用84,000／現金84,000(支付員工薪資)。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第10題；解答出處: IMG_0361.HEIC"}, {"no": "2-計11", "type": "計算", "chapter": "第二章", "source_image": "IMG_0347.HEIC", "text": "台中公司於10月1日成立，並於10月份完成下列交易：10月1日投入現金$700,000成立台中公司。5日購買辦公用品，共支付$76,200。18日提供客戶服務，並收到現金$67,350。30日支付員工薪資$38,000。試作：編製台中公司10月份交易之會計分錄。", "options": {}, "answer": "10月1日 現金700,000／股本700,000(記錄股東之原始投資)；10月5日 辦公用品76,200／現金76,200(記錄購置辦公用品)；10月18日 現金67,350／服務收入67,350(記錄服務收入)；10月30日 薪資費用38,000／現金38,000(支付員工薪資)。", "explanation": "10月1日 現金700,000／股本700,000(記錄股東之原始投資)；10月5日 辦公用品76,200／現金76,200(記錄購置辦公用品)；10月18日 現金67,350／服務收入67,350(記錄服務收入)；10月30日 薪資費用38,000／現金38,000(支付員工薪資)。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第11題；解答出處: IMG_0362.HEIC"}, {"no": "3-問1", "type": "簡答", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "何謂會計循環？", "options": {}, "answer": "會計循環是指會計處理程序分為：分錄、過帳、試算、調整、編表及結帳六個步驟，前三項是平時經常性的會計工作，而後三項則是期末會計處理程序，這六項會計處理程序週而復始的進行。", "explanation": "會計循環是指會計處理程序分為：分錄、過帳、試算、調整、編表及結帳六個步驟，前三項是平時經常性的會計工作，而後三項則是期末會計處理程序，這六項會計處理程序週而復始的進行。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第1題；解答出處: IMG_0362.HEIC"}, {"no": "3-問2", "type": "簡答", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "何謂調整？有何功用？", "options": {}, "answer": "調整係為使企業的財務報表能正確地表達實際經營成果與財務狀況，在每一個會計期間結束時，會計人員必須對分類帳內各帳戶的餘額予以修正，使其符合實際狀況的過程。而調整的功用如下：(1)使交易歸屬於正確的會計期間——會計期間假設，將企業永續的生命，劃分成許多段落，俾將企業所發生的經濟交易事項，適當地歸屬於各會計期間。而會計人員在會計期間期末藉由調整分錄，可以達成將企業所發生的經濟交易事項，適當地歸屬於各會計期間的目的。(2)使報表正確地反映企業的財務狀況及經營成果——企業的財務報表經由調整使其資產、負債、權益、收入及費用等各帳戶餘額均符合實際情形，以達到公允表達企業之財務狀況與經營成果。(3)簡化會計人員的平時會計工作——會計人員的平時會計工作相當繁瑣，有些帳戶的處理，平時可不做詳細記載，如：利息收入、折舊等帳戶，等到會計期間期末時進行分析調整，可達到簡化平時會計工作的目的。", "explanation": "調整係為使企業的財務報表能正確地表達實際經營成果與財務狀況，在每一個會計期間結束時，會計人員必須對分類帳內各帳戶的餘額予以修正，使其符合實際狀況的過程。而調整的功用如下：(1)使交易歸屬於正確的會計期間——會計期間假設，將企業永續的生命，劃分成許多段落，俾將企業所發生的經濟交易事項，適當地歸屬於各會計期間。而會計人員在會計期間期末藉由調整分錄，可以達成將企業所發生的經濟交易事項，適當地歸屬於各會計期間的目的。(2)使報表正確地反映企業的財務狀況及經營成果——企業的財務報表經由調整使其資產、負債、權益、收入及費用等各帳戶餘額均符合實際情形，以達到公允表達企業之財務狀況與經營成果。(3)簡化會計人員的平時會計工作——會計人員的平時會計工作相當繁瑣，有些帳戶的處理，平時可不做詳細記載，如：利息收入、折舊等帳戶，等到會計期間期末時進行分析調整，可達到簡化平時會計工作的目的。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第2題；解答出處: IMG_0362.HEIC"}, {"no": "3-問3", "type": "簡答", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "何謂配合原則？", "options": {}, "answer": "指企業為賺取收入而發生的所有費用必須與收入在同一會計期間認列。同樣以服務業為例，企業提供服務時，除認列服務收入外，因提供服務而發生的相關費用，如：薪資費用、郵電費用等費用已發生，而尚未支付，但服務收入已賺得，在會計期間期末，仍然要認列為費用。", "explanation": "指企業為賺取收入而發生的所有費用必須與收入在同一會計期間認列。同樣以服務業為例，企業提供服務時，除認列服務收入外，因提供服務而發生的相關費用，如：薪資費用、郵電費用等費用已發生，而尚未支付，但服務收入已賺得，在會計期間期末，仍然要認列為費用。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第3題；解答出處: IMG_0363.HEIC"}, {"no": "3-問4", "type": "簡答", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "何謂應計基礎及現金基礎？何者符合一般公認會計原則？", "options": {}, "answer": "應計基礎係指企業對於收入與費用認定標準和權利及責任的發生，作為入帳的基礎，即以收入與費用是否實現作為認列收入與費用的基礎，而不論其是否有實際現金之收付。現金基礎係指企業對於收入與費用的認定標準，均以實際的現金收付為判斷基礎，也就是企業於收到現金才認列收入，費用則於支付現金時認列。期末各帳戶不需做任何調整，會計工作較為簡化。其中，應計基礎較能正確反映企業之經營結果，符合一般公認會計原則。", "explanation": "應計基礎係指企業對於收入與費用認定標準和權利及責任的發生，作為入帳的基礎，即以收入與費用是否實現作為認列收入與費用的基礎，而不論其是否有實際現金之收付。現金基礎係指企業對於收入與費用的認定標準，均以實際的現金收付為判斷基礎，也就是企業於收到現金才認列收入，費用則於支付現金時認列。期末各帳戶不需做任何調整，會計工作較為簡化。其中，應計基礎較能正確反映企業之經營結果，符合一般公認會計原則。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第4題；解答出處: IMG_0363.HEIC"}, {"no": "3-問5", "type": "簡答", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "試簡述調整分錄的類型，並舉例說明。", "options": {}, "answer": "調整分錄的類型可分為應計項目及遞延項目兩項。如：應收收入與應付費用、預收收入與預付費用。", "explanation": "調整分錄的類型可分為應計項目及遞延項目兩項。如：應收收入與應付費用、預收收入與預付費用。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第5題；解答出處: IMG_0363.HEIC"}, {"no": "3-問6", "type": "簡答", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "何謂應計項目及遞延項目？請舉例說明。", "options": {}, "answer": "應計項目係指交易已發生，但因尚未收到現金或付出現金，故未記錄的事項。這些已發生的交易，在應計基礎下應於會計期間終了時，予以補記，做適當的調整分錄，俾利相關帳戶符合實際狀況。主要分為應收收入與應付費用。遞延項目包括預收收入、預付費用兩項，係指已收取現金或支付現金，但在會計期間結束時，對已賺得收入或已耗用資產部份，與尚未賺得收入或未耗用資產部份，應予以區別，俾利對相關帳戶作適當的調整。", "explanation": "應計項目係指交易已發生，但因尚未收到現金或付出現金，故未記錄的事項。這些已發生的交易，在應計基礎下應於會計期間終了時，予以補記，做適當的調整分錄，俾利相關帳戶符合實際狀況。主要分為應收收入與應付費用。遞延項目包括預收收入、預付費用兩項，係指已收取現金或支付現金，但在會計期間結束時，對已賺得收入或已耗用資產部份，與尚未賺得收入或未耗用資產部份，應予以區別，俾利對相關帳戶作適當的調整。", "explanation_source": "解答本", "answer_source": "解答本", "note": "問答題第6題；解答出處: IMG_0363.HEIC"}, {"no": "3-是1", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "一個企業在一會計期間內的所有會計處理程序，周而復始，循環不已，稱為會計循環。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。會計循環指企業在每一會計期間，依序完成分錄、過帳、試算、調整、編表、結帳等程序，並於下期周而復始循環進行。關鍵概念：會計循環＝會計程序週而復始。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第1題；解答出處: IMG_0363.HEIC"}, {"no": "3-是2", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "調整分錄必須記入日記簿，再過入分類帳即可。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。調整分錄本質上也是一種分錄，必須先記入日記簿，再依日記簿過帳至分類帳，不能省略日記簿直接記入分類帳。關鍵概念：調整分錄亦須過日記簿再過帳。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第2題；解答出處: IMG_0363.HEIC"}, {"no": "3-是3", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "調整分錄應記於分類帳，改正分錄應記於日記簿。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。調整分錄與改正分錄都是正式分錄，都必須先記入日記簿，再過入分類帳，不能直接記於分類帳。關鍵概念：任何分錄皆須先記日記簿。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第3題；解答出處: IMG_0363.HEIC"}, {"no": "3-是4", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "財務報表是依據結帳後試算表來編製。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。財務報表是依據「調整後試算表」編製；結帳後試算表已將收入、費用等虛帳戶結清，僅剩實帳戶餘額，無法作為編表依據。關鍵概念：編表依調整後試算表，非結帳後試算表。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第4題；解答出處: IMG_0363.HEIC"}, {"no": "3-是5", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "損益表是表達某一企業在某特定期間之經營結果。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。損益表表達企業在某一特定期間（如一個月、一年）的收入與費用，計算淨利或淨損，亦即該期間的經營成果。關鍵概念：損益表＝特定期間經營成果。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第5題；解答出處: IMG_0363.HEIC"}, {"no": "3-是6", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "如一筆費用已發生，但尚未收現，在期末時應調整做借記費用科目。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。費用已發生但尚未支付現金（應付費用），期末應作應計費用調整分錄：借記費用（如薪資費用）、貸記應付費用，以使當期費用認列完整。關鍵概念：應計費用調整＝借費用、貸應付費用。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第6題；解答出處: IMG_0363.HEIC"}, {"no": "3-是7", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "預付費用、預收收入、利息收入均屬虛帳戶。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。預付費用屬資產、預收收入屬負債，兩者皆為實帳戶；利息收入才是收入類的虛帳戶，不可混為一談。關鍵概念：預付/預收是實帳戶，收入/費用是虛帳戶。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第7題；解答出處: IMG_0363.HEIC"}, {"no": "3-是8", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "調整後試算表均為實帳戶之餘額，結帳後試算表則有實帳戶及虛帳戶各帳戶之餘額。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤，剛好顛倒。調整後試算表仍同時包含實帳戶（資產、負債、權益）與虛帳戶（收入、費用）；結帳後虛帳戶已結清，僅剩實帳戶餘額。關鍵概念：調整後試算表含虛實帳戶，結帳後僅剩實帳戶。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第8題；解答出處: IMG_0363.HEIC"}, {"no": "3-是9", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "試算表僅能在期末結算時編製，其他時日則不能編製。", "options": {"○": "正確", "×": "錯誤"}, "answer": "×", "explanation": "〔AI 解析：解答本未印〕這題敘述錯誤。試算表可隨時依需要編製，做為平時檢查借貸平衡的工具，並非僅限期末結算時才能編製。關鍵概念：試算表可隨時編製。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第9題；解答出處: IMG_0363.HEIC"}, {"no": "3-是10", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "預付費用已實現之部份為費用性質。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕這題敘述正確。預付費用（如預付保險費、預付租金）屬資產，隨時間經過已消耗/實現的部分，期末應轉列為當期費用。關鍵概念：預付費用消耗部分轉列費用。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題第10題；解答出處: IMG_0363.HEIC"}, {"no": "3-選1", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "平時經常性的會計工作為", "options": {"(1)": "過帳→分錄→試算", "(2)": "交易→試算→過帳", "(3)": "分錄→過帳→試算", "(4)": "過帳→試算→分錄。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。平時經常性會計工作為：交易發生後先在日記簿分錄，再過帳至分類帳，並定期試算以驗證借貸平衡，順序為分錄→過帳→試算。關鍵概念：平時程序＝分錄、過帳、試算。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "選擇題第1題；解答出處: IMG_0363.HEIC"}, {"no": "3-選2", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "期末會計處理程序為", "options": {"(1)": "調整→編表→結帳", "(2)": "試算→結帳→編表", "(3)": "編表→調整→結帳", "(4)": "調整→結帳→編表。"}, "answer": "(1)", "explanation": "〔AI 解析：解答本未印〕正確答案為(1)。期末程序為：先做調整分錄使損益與資產負債認列完整，再依調整後試算表編製財務報表，最後將虛帳戶結清（結帳）。關鍵概念：期末程序＝調整、編表、結帳。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "選擇題第2題；解答出處: IMG_0363.HEIC"}, {"no": "3-選3", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "調整分錄是確保", "options": {"(1)": "收入在收現的期間認列", "(2)": "費用在付現的期間認列", "(3)": "期末資產負債表和損益表的餘額是正確的", "(4)": "以上皆是。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。調整分錄依權責發生基礎，把應歸屬當期的收入與費用認列完畢，以確保期末資產負債表與損益表金額正確；它不是以現金收付為認列依據，故(1)(2)錯。關鍵概念：調整分錄確保兩表金額正確。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "選擇題第3題；解答出處: IMG_0363.HEIC"}, {"no": "3-選4", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "預收收入已賺得之部份為", "options": {"(1)": "資產", "(2)": "負債", "(3)": "收入", "(4)": "費用。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。預收收入是企業已收現但尚未提供勞務/商品的負債；隨著履約，已賺得部分應轉列為當期收入。關鍵概念：預收收入賺得部分轉列收入。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "選擇題第4題；解答出處: IMG_0363.HEIC"}, {"no": "3-選5", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "表示企業財務狀況的報表為", "options": {"(1)": "權益變動表", "(2)": "損益表", "(3)": "資產負債表", "(4)": "現金流量表。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。資產負債表（財務狀況表）表達企業在特定日期的資產、負債與權益結構，即財務狀況；損益表表達經營成果，現金流量表表達現金流動。關鍵概念：資產負債表＝財務狀況。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "選擇題第5題；解答出處: IMG_0363.HEIC"}, {"no": "3-選6", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "下列哪一項目不需支付現金？", "options": {"(1)": "郵電費用", "(2)": "折舊費用", "(3)": "薪資費用", "(4)": "廣告費用。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。折舊費用是把有形資產的歷史成本按使用年限分攤認列，當期並不動用現金；郵電、薪資、廣告費均須實際支付現金。關鍵概念：折舊為非現金費用。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "選擇題第6題；解答出處: IMG_0363.HEIC"}, {"no": "3-選7", "type": "選擇", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "東日公司×3年7月1日預付一年期保險費$6,000，並以資產科目入帳。若該公司×3年12月31日未作保險費的調整分錄，則會造成", "options": {"(1)": "資產高估$6,000，費用低估$6,000", "(2)": "資產低估$6,000，費用高估$6,000", "(3)": "資產高估$3,000，費用低估$3,000", "(4)": "資產低估$3,000，費用高估$3,000。"}, "answer": "(3)", "explanation": "〔AI 解析：解答本未印〕正確答案為(3)。一年保險費$6,000，自7月1日至12月31日共經過6個月，已消耗$6,000×6/12＝$3,000。若未作調整，預付保險費（資產）未減少$3,000，致資產高估$3,000；同時保險費用$3,000未認列，致費用低估$3,000。關鍵概念：未攤銷預付費用使資產高估、費用低估。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "選擇題第7題；解答出處: IMG_0363.HEIC"}, {"no": "3-計1", "type": "計算", "chapter": "第三章", "source_image": "IMG_0348.HEIC", "text": "德新公司×1年底調整事項如下，請做成調整分錄：(1)應收未收租金$10,000。(2)應付未付水電費$20,000。(3)×1年12月份，薪資為$500,000，次年1月10日支付。\n（接續上頁未顯示之第1題）(4) 本年3月1日收到一年期之租金 $240,000。(5) 帳列文具用品盤存(文具用品) $50,000，年底盤點時尚餘 $30,000。(6) 11月1日支付半年保險費 $300,000，當時借記預付保險費。", "options": {}, "answer": "(1)應收租金10,000／租金收入10,000；(2)水電費用20,000／應付水電費20,000；(3)薪資費用500,000／應付薪資500,000；(4)預收租金200,000／租金收入200,000；(5)文具用品費用20,000／文具用品20,000；(6)保險費100,000／預付保險費100,000。", "explanation": "(1)應收租金10,000／租金收入10,000；(2)水電費用20,000／應付水電費20,000；(3)薪資費用500,000／應付薪資500,000；(4)預收租金200,000／租金收入200,000；(5)文具用品費用20,000／文具用品20,000；(6)保險費100,000／預付保險費100,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "計算題第1題；續頁(4)(5)(6)見 IMG_0349.HEIC；解答出處: IMG_0363.HEIC"}, {"no": "3-計2", "type": "計算", "chapter": "第三章", "source_image": "IMG_0349.HEIC", "text": "2. 志遠公司×3年3月31日調整前部份帳戶如下：借方：預付保險費 $36,000；文具用品 48,000；利息費用 0；薪資費用 220,000。貸方：應付票據 $200,000；預收租金 120,000；租金收入 700,000；利息收入 0。3月31日會計人員分析帳戶列示如下：(1) 四分之一的預收租金在本季已賺得。(2) 應付票據至第一季末有應計利息 $8,200。(3) 文具用品盤存會計師下 $9,000。(4) 保險費每個月 $2,000。(5) 銀行存款應計利息 $5,000。設該公司會計期間為一季，試編製×3年3月31日之調整分錄。", "options": {}, "answer": "(1)預收租金30,000／租金收入30,000；(2)利息費用8,200／應付利息8,200；(3)文具用品費用39,000／文具用品39,000；(4)保險費6,000／預付保險費6,000；(5)應收利息5,000／利息收入5,000。", "explanation": "(1)預收租金30,000／租金收入30,000；(2)利息費用8,200／應付利息8,200；(3)文具用品費用39,000／文具用品39,000；(4)保險費6,000／預付保險費6,000；(5)應收利息5,000／利息收入5,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "書上題號：3-2；解答出處: IMG_0363.HEIC"}, {"no": "3-計3", "type": "計算", "chapter": "第三章", "source_image": "IMG_0349.HEIC", "text": "3. 英明公司期末調整前有預付保險費 $40,000，預收租金 $100,000，調整後，預付保險費為 $20,000，預收租金為 $70,000。已知調整前公司淨利為 $420,000，試問調整後，公司淨利為若干？", "options": {}, "answer": "$430,000", "explanation": "調整後公司淨利=$420,000-($40,000-$20,000)+($100,000-$70,000)=$430,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "書上題號：3-3；解答出處: IMG_0363.HEIC"}, {"no": "3-計4", "type": "計算", "chapter": "第三章", "source_image": "IMG_0349.HEIC", "text": "4. 三勝公司×1年底調整後試算表中有關預付三年的保險費為 $360,000，保險費為 $10,000，預計保險於×4年11月底到期。試問該保險於何時購入？×2年、×3年及×4年保險費用各年度金額？", "options": {}, "answer": "於×1年12月1日購入。×2年保險費用=$360,000÷36×12=$120,000；×3年保險費用=$360,000÷36×12=$120,000；×4年保險費用=$360,000÷36×11=$110,000。", "explanation": "於×1年12月1日購入。×2年保險費用=$360,000÷36×12=$120,000；×3年保險費用=$360,000÷36×12=$120,000；×4年保險費用=$360,000÷36×11=$110,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "書上題號：3-4；解答出處: IMG_0364.HEIC"}, {"no": "3-計5", "type": "計算", "chapter": "第三章", "source_image": "IMG_0349.HEIC", "text": "5. 佳德公司從事廣告業務，×2年12月31日調整前及調整後試算表列示如下：【佳德公司試算表 ×2年12月31日】調整前借方：現金 $12,000、應收帳款 20,000、應收利息 0、廣告用品 9,600、預付保險費 4,350、運輸設備 60,000、股利 12,000、薪資費用 10,000、利息費用 350、廣告用品費用 0、租金費用 4,000；調整前貸方：應付帳款 $5,000、應付利息 0、應付票據 5,000、預收廣告收入 8,200、應付薪資 0、應付租金 0、股本 26,500、廣告收入 58,600、利息收入 29,000；合計 $132,300/$132,300。調整後借方：現金 $12,000、應收帳款 21,500、應收利息 7,000、廣告用品 6,000、預付保險費 3,500、運輸設備 60,000、股利 12,000、薪資費用 11,300、保險費用 850、利息費用 500、廣告用品費用 3,600、租金費用 11,000；調整後貸方：應付帳款 $5,000、應付利息 150、應付票據 5,000、預收廣告收入 6,600、應付薪資 1,300、應付租金 7,000、股本 26,500、廣告收入 61,700、利息收入 36,000；合計 $149,250/$149,250。試作：佳德公司本年度之調整分錄。", "options": {}, "answer": "調整分錄：①應收帳款1,500／廣告收入1,500；②預收廣告收入1,600／廣告收入1,600；③廣告用品費用3,600／廣告用品3,600；④保險費用850／預付保險費850；⑤利息費用150／應付利息150；⑥薪資費用1,300／應付薪資1,300；⑦應收利息7,000／利息收入7,000；⑧租金費用7,000／應付租金7,000。", "explanation": "調整分錄：①應收帳款1,500／廣告收入1,500；②預收廣告收入1,600／廣告收入1,600；③廣告用品費用3,600／廣告用品3,600；④保險費用850／預付保險費850；⑤利息費用150／應付利息150；⑥薪資費用1,300／應付薪資1,300；⑦應收利息7,000／利息收入7,000；⑧租金費用7,000／應付租金7,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "書上題號：3-5；解答出處: IMG_0364.HEIC"}, {"no": "3-計6", "type": "計算", "chapter": "第三章", "source_image": "IMG_0350.HEIC", "text": "6. 三和公司於×1年底調整前試算表各科目餘額和調整資料如下，試完成調整後試算表。借方：現金 $4,042,000、應收帳款 500,000、文具用品 100,000、預付保險費 72,000、辦公設備 1,000,000、累計折舊—辦公設備 100,000；貸方：應付票據 $578,000、股本 4,000,000、股利 700,000、服務收入 2,033,000、薪資費用 205,000、水電費用 92,000。調整項目：(1) 已耗用文具用品80%。(2) 8月1日預付1年保險費 $72,000。", "options": {}, "answer": "借貸平衡 $6,811,000", "explanation": "三和公司 調整後試算表 ×1年12月31日。借方：現金$4,042,000、應收帳款500,000、文具用品20,000、預付保險費42,000、辦公設備1,000,000、股利700,000、薪資費用205,000、水電費用92,000、保險費用30,000、文具用品費用80,000、折舊費用100,000；貸方：累計折舊—辦公設備$200,000、應付票據578,000、股本4,000,000、服務收入2,033,000。合計借方$6,811,000／貸方$6,811,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "書上題號：3-6；解答出處: IMG_0364.HEIC"}, {"no": "3-計7", "type": "計算", "chapter": "第三章", "source_image": "IMG_0350.HEIC", "text": "7. 長崎公司×6年底調整前各帳戶餘額如下：類頁1 現金 $628,000；10 應收帳款 300,000；15 文具用品 12,000；16 預付租金 80,000；18 機器設備 1,200,000；19 累計折舊 200,000；21 應付票據 200,000；23 應付帳款 300,000；25 應付薪資 $0；28 預收收入 20,000；31 股本 1,000,000；42 勞務收入 1,500,000；56 薪資費用 1,000,000；58 用品費用 0；59 租金費用 0；60 折舊費用 0。長崎公司×6年底應調整事項如下：(1) 盤點文具用品尚存 $10,000。(2) 12月份薪資 $160,000將於明年初發放。(3) 預付租金中四分之三已實現。試編製長崎公司調整後試算表。", "options": {}, "answer": "借貸平衡 $3,580,000", "explanation": "長崎公司 調整後試算表 ×6年12月31日。借方：現金$628,000、應收帳款300,000、文具用品10,000、預付租金20,000、機器設備1,200,000、薪資費用1,160,000、用品費用2,000、租金費用60,000、折舊費用200,000；貸方：累計折舊$400,000、應付票據200,000、應付帳款300,000、應付薪資160,000、預收收入20,000、股本1,000,000、勞務收入1,500,000。合計借方$3,580,000／貸方$3,580,000。", "explanation_source": "解答本", "answer_source": "解答本", "note": "書上題號：3-7；解答出處: IMG_0365.HEIC"}, {"no": "4-問1", "type": "簡答", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "1. 結帳的意義及步驟為何？", "options": {}, "answer": "結帳乃指將企業在會計期間結束時，將虛帳戶的各帳戶餘額結清，實帳戶結轉下期，使各帳戶記錄暫告一個段落的會計處理程序。而其處理步驟如下所示：(1)結清虛帳戶——結清損益表帳戶時，為使收益及費用各帳戶的餘額結清歸零，將各帳戶餘額結轉至一個過渡性的彙總帳戶為「損益彙總」帳戶，也有用「本期損益」帳戶。當收入、費用帳戶餘額結轉至損益彙總帳戶後，再將損益彙總帳戶餘額結轉至權益的保留盈餘項內。最後，將股利帳戶餘額結清歸零，結轉至保留盈餘項內。(2)結轉實帳戶——結轉實帳戶乃將資產負債表內的資產、負債及權益類帳戶之餘額結轉至下期，繼續記載。", "explanation": "結帳乃指將企業在會計期間結束時，將虛帳戶的各帳戶餘額結清，實帳戶結轉下期，使各帳戶記錄暫告一個段落的會計處理程序。而其處理步驟如下所示：(1)結清虛帳戶——結清損益表帳戶時，為使收益及費用各帳戶的餘額結清歸零，將各帳戶餘額結轉至一個過渡性的彙總帳戶為「損益彙總」帳戶，也有用「本期損益」帳戶。當收入、費用帳戶餘額結轉至損益彙總帳戶後，再將損益彙總帳戶餘額結轉至權益的保留盈餘項內。最後，將股利帳戶餘額結清歸零，結轉至保留盈餘項內。(2)結轉實帳戶——結轉實帳戶乃將資產負債表內的資產、負債及權益類帳戶之餘額結轉至下期，繼續記載。", "explanation_source": "解答本", "answer_source": "解答本", "note": "解答出處: IMG_0365.HEIC"}, {"no": "4-問2", "type": "簡答", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "2. 何謂實帳戶及虛帳戶？兩者有何區別？", "options": {}, "answer": "(1)實帳戶——實帳戶乃指在會計期間終了後，資產負債表的資產、負債及權益各帳戶，並不會結清而除列。(2)虛帳戶——虛帳戶係指損益表的收益、費用及權益變動表之股利，在會計期間結束時，須結清損益表內之收入及費用各帳戶餘額歸零，本期損益歸至權益。而損益表內之收入及費用各帳戶，至下一個會計期間開始重新由零開始記錄，以累積記錄企業下一個會計期間的經營結果。權益變動表之股利也在會計期間結束時，需要結清歸零，結轉至資產負債表的權益，使得權益產生減少的變動。", "explanation": "(1)實帳戶——實帳戶乃指在會計期間終了後，資產負債表的資產、負債及權益各帳戶，並不會結清而除列。(2)虛帳戶——虛帳戶係指損益表的收益、費用及權益變動表之股利，在會計期間結束時，須結清損益表內之收入及費用各帳戶餘額歸零，本期損益歸至權益。而損益表內之收入及費用各帳戶，至下一個會計期間開始重新由零開始記錄，以累積記錄企業下一個會計期間的經營結果。權益變動表之股利也在會計期間結束時，需要結清歸零，結轉至資產負債表的權益，使得權益產生減少的變動。", "explanation_source": "解答本", "answer_source": "解答本", "note": "解答出處: IMG_0365.HEIC"}, {"no": "4-問3", "type": "簡答", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "3. 何謂結帳後試算表？", "options": {}, "answer": "結帳後試算表乃指結帳分錄登錄與過帳後，為確定結帳後分類帳中各帳戶餘額的借貸是否平衡，有必要根據結帳後分類帳餘額再編製試算表，此試算表稱為結帳後試算表。", "explanation": "結帳後試算表乃指結帳分錄登錄與過帳後，為確定結帳後分類帳中各帳戶餘額的借貸是否平衡，有必要根據結帳後分類帳餘額再編製試算表，此試算表稱為結帳後試算表。", "explanation_source": "解答本", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-問4", "type": "簡答", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "4. 請簡述會計循環的處理程序。", "options": {}, "answer": "會計的處理程序為開始於對企業交易的分析，再將交易記入日記簿，其次由日記簿過帳至分類帳後，編製試算表做調整分錄及過帳與編製調整後試算表，然後編製財務報表，最後做結帳分錄及過帳與編製結帳後試算表，週而復始每期循環一次，此為會計循環。綜合以上所述，可簡單歸納出會計循環為分錄、過帳、試算、調整、編製財務報表及結帳。前三項為平時的會計處理程序：分錄、過帳、試算；後三項為期末會計處理程序：調整、編表、結帳。", "explanation": "會計的處理程序為開始於對企業交易的分析，再將交易記入日記簿，其次由日記簿過帳至分類帳後，編製試算表做調整分錄及過帳與編製調整後試算表，然後編製財務報表，最後做結帳分錄及過帳與編製結帳後試算表，週而復始每期循環一次，此為會計循環。綜合以上所述，可簡單歸納出會計循環為分錄、過帳、試算、調整、編製財務報表及結帳。前三項為平時的會計處理程序：分錄、過帳、試算；後三項為期末會計處理程序：調整、編表、結帳。", "explanation_source": "解答本", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-問5", "type": "簡答", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "5. 請簡述何謂資產、負債及權益。", "options": {}, "answer": "資產乃指企業所擁有的經濟資源，該資源係由於過去交易事項所產生，且預期未來可產生經濟效益之流入，包括流動資產、長期投資、不動產、廠房及設備、無形資產及其他資產。負債係指企業所承擔義務，該義務未來必須以資產或新的債務償還者，包括流動負債、非流動負債及其他負債。權益係為股東對企業剩餘權益的請求權，包含股東投入資本、本期經營的損益及增資金額、減去股利。", "explanation": "資產乃指企業所擁有的經濟資源，該資源係由於過去交易事項所產生，且預期未來可產生經濟效益之流入，包括流動資產、長期投資、不動產、廠房及設備、無形資產及其他資產。負債係指企業所承擔義務，該義務未來必須以資產或新的債務償還者，包括流動負債、非流動負債及其他負債。權益係為股東對企業剩餘權益的請求權，包含股東投入資本、本期經營的損益及增資金額、減去股利。", "explanation_source": "解答本", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-問6", "type": "簡答", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "6. 何謂營業循環？", "options": {}, "answer": "營業循環乃為企業營業活動由支出現金開始至收回現金為止不斷的循環過程。以買賣業為例，企業營業活動由支出現金購入商品成為存貨，再經由賒銷商品成為應收帳款，最後向客戶收回應收帳款成為現金，所需的時間為一個週期，稱為營業週期。", "explanation": "營業循環乃為企業營業活動由支出現金開始至收回現金為止不斷的循環過程。以買賣業為例，企業營業活動由支出現金購入商品成為存貨，再經由賒銷商品成為應收帳款，最後向客戶收回應收帳款成為現金，所需的時間為一個週期，稱為營業週期。", "explanation_source": "解答本", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-是1", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "1. 所謂流動性係指預期變現的速度。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕正確答案為「○」。流動性（liquidity）在初級會計中通常指資產轉換為現金的難易度或速度，愈快變現者流動性愈高，故流動性係指預期變現速度的說法符合課本定義。關鍵概念：流動性＝資產變現速度。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題；書上題號：4-是非1；解答出處: IMG_0366.HEIC"}, {"no": "4-是2", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "2. 營業循環也稱為營業週期。但是，營業循環不同於會計循環。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕正確答案為「○」。營業循環又稱營業週期，指企業從現金購買存貨到銷售收現的週期；會計循環則指分錄、過帳、試算、調整、編表、結帳的會計程序，兩者意義不同。關鍵概念：營業循環≠會計循環。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題；書上題號：4-是非2；解答出處: IMG_0366.HEIC"}, {"no": "4-是3", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "3. 營業循環為企業營業活動由支出現金開始至收回現金止的不間斷循環過程。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕正確答案為「○」。營業循環確為企業由支出現金購貨開始，經銷售商品、收回現金，再重新購貨的不間斷循環過程，描述符合定義。關鍵概念：營業循環＝現金→存貨→銷貨→現金。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題；書上題號：4-是非3；解答出處: IMG_0366.HEIC"}, {"no": "4-是4", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "4. 實帳戶乃指在會計期間終了後，資產負債表的資產、負債及權益各帳戶，並不會結清而列。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕正確答案為「○」。實帳戶指資產、負債、權益等資產負債表帳戶，期末不結清，餘額結轉下期；與之相對的收入、費用（虛帳戶）期末才結清。關鍵概念：實帳戶期末不結清、結轉下期。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題；書上題號：4-是非4；解答出處: IMG_0366.HEIC"}, {"no": "4-是5", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "5. 結帳乃指將企業在會計期間結束時，將虛帳戶的各帳戶餘額結清，實帳戶結轉下期，使各帳戶記錄暫告一個段落的會計處理程序。", "options": {"○": "正確", "×": "錯誤"}, "answer": "○", "explanation": "〔AI 解析：解答本未印〕正確答案為「○」。結帳的定義正是：會計期間結束時，將收入、費用等虛帳戶餘額結清至保留盈餘，實帳戶（資產、負債、權益）餘額結轉下期，使各帳戶記錄暫告段落。關鍵概念：結帳＝虛帳戶結清、實帳戶結轉。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "是非題；書上題號：4-是非5；解答出處: IMG_0366.HEIC"}, {"no": "4-選1", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "1. 會計五大要素的收入與費用為", "options": {"(1)": "實帳戶", "(2)": "虛帳戶", "(3)": "混合帳戶", "(4)": "以上皆非。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。收入與費用屬於損益表帳戶，期末結帳時餘額歸零、不結轉下期，故為虛帳戶；實帳戶則指資產、負債、權益。關鍵概念：損益表科目＝虛帳戶。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-選2", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "2. 會計人員必須將餘額結轉下期的帳戶是", "options": {"(1)": "實帳戶", "(2)": "虛帳戶", "(3)": "實帳戶與虛帳戶", "(4)": "不需任何結轉。"}, "answer": "(1)", "explanation": "〔AI 解析：解答本未印〕正確答案為(1)。實帳戶（資產、負債、權益）期末不結清，餘額結轉下期；虛帳戶（收入、費用）期末結帳歸零，不結轉。關鍵概念：實帳戶結轉下期，虛帳戶結清歸零。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-選3", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "3. 結帳分錄會使哪些帳戶之期末餘額變為零？", "options": {"(1)": "收入", "(2)": "資產", "(3)": "權益", "(4)": "以上皆是。"}, "answer": "(1)", "explanation": "〔AI 解析：解答本未印〕正確答案為(1)。結帳分錄將收入、費用等虛帳戶餘額結清至保留盈餘，使其期末餘額變為零；資產、權益屬實帳戶，餘額結轉下期不歸零。關鍵概念：結帳分錄使虛帳戶（收入、費用）歸零。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-選4", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "4. 下列項目何者為虛帳戶？", "options": {"(1)": "薪資費用", "(2)": "廣告費用", "(3)": "銷貨收入", "(4)": "預付費用。"}, "answer": "(4)", "explanation": "〔AI 解析：解答本未印〕解答本答案為(4)。(1)薪資費用、(2)廣告費用、(3)銷貨收入皆屬虛帳戶（期末結清歸零），(4)「預付費用」為資產類科目、屬實帳戶（結轉下期）；注意本題題面「何者為虛帳戶」若照字面解讀與解答本答案(4)似有出入，可能題面原文為「何者不為虛帳戶」或選項設計有誤，建議對照原書確認。關鍵概念：虛帳戶＝收入、費用、股利；實帳戶＝資產、負債、權益。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-選5", "type": "選擇", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "5. 下列哪一個帳戶在期末結帳時要結清？", "options": {"(1)": "應收利息", "(2)": "廣告費用", "(3)": "應收帳款", "(4)": "預付費用。"}, "answer": "(2)", "explanation": "〔AI 解析：解答本未印〕正確答案為(2)。廣告費用屬費用類（虛帳戶），期末結帳時結清至保留盈餘；應收利息、應收帳款、預付費用皆屬資產（實帳戶），期末不結清、結轉下期。關鍵概念：費用類虛帳戶期末結清。", "explanation_source": "AI 解析", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC"}, {"no": "4-計1", "type": "計算", "chapter": "第四章", "source_image": "IMG_0351.HEIC", "text": "1. 日正國際公司×1年會計年度終了日調整後試算表資料如下：【日正國際公司調整後試算表 ×1年12月31日】借方：現金 $249,400、應收帳款 97,800、設備 259,000、股利 120,000、佣金收入 631,000、租金收入 75,000、折舊費用 40,000、薪資費用 567,000、水電費用 149,000；貸方：累計折舊—設備 $154,000、應付帳款 52,200、預收租金收入 48,000、股本 522,000；合計 $1,482,200/$1,482,200。試作：(1) 結帳分錄。(2) 結帳後試算表。", "options": {}, "answer": "①結清收入類帳戶：借：佣金收入 631,000、租金收入 75,000／貸：損益彙總 706,000\n②結清費用類帳戶：借：損益彙總 756,000／貸：折舊費用 40,000、薪資費用 567,000、水電費用 149,000\n③結清損益彙總：借：保留盈餘 50,000／貸：損益彙總 50,000\n④結清股利：借：保留盈餘 120,000／貸：股利 120,000", "explanation": "①結清收入類帳戶：借：佣金收入 631,000、租金收入 75,000／貸：損益彙總 706,000\n②結清費用類帳戶：借：損益彙總 756,000／貸：折舊費用 40,000、薪資費用 567,000、水電費用 149,000\n③結清損益彙總：借：保留盈餘 50,000／貸：損益彙總 50,000\n④結清股利：借：保留盈餘 120,000／貸：股利 120,000", "explanation_source": "解答本", "answer_source": "解答本", "note": "解答出處: IMG_0366.HEIC；本題「結帳後試算表」部分未拍到，仍待核對"}, {"no": "4-計2", "type": "計算", "chapter": "第四章", "source_image": "IMG_0352.HEIC", "text": "2. 智勝公司在×1年底調整後試算表資料如下：借方：現金 $29,000、應收帳款 47,200、預付保險費 6,200、土地 90,000、建築物 124,000、設備 61,000、應付帳款 22,000、預收租金收入 4,500、應付票據 36,000(×1年6月到期)、股本 258,700；貸方：股利 $16,000、服務收入 89,500、租金收入 21,100、薪資費用 24,300、廣告費用 3,400、水電費用 2,700、折舊費用—建築物 8,500、折舊費用—設備 1,800、累計折舊—建築物 24,500、累計折舊—設備 3,600。試作：結帳分錄。", "options": {}, "answer": "[待核对]", "explanation": "", "explanation_source": "待核对", "answer_source": "待核对", "note": ""}, {"no": "4-計3", "type": "計算", "chapter": "第四章", "source_image": "IMG_0352.HEIC", "text": "3. 佳英貨運公司於×8年12月23日預收貨運款 $500,000，至12月底已為佳玲公司提供載運服務之運費收入為 $200,000。試作期末調整及結帳之分錄。", "options": {}, "answer": "[待核对]", "explanation": "", "explanation_source": "待核对", "answer_source": "待核对", "note": ""}, {"no": "4-計4", "type": "計算", "chapter": "第四章", "source_image": "IMG_0352.HEIC", "text": "4. 有得佳公司×9年12月31日調整後試算表如下：借方：現金 $28,600、應收帳款 75,600、應收利息 14,000、應收票據(90天到期) 224,000、文具用品 11,200、運輸設備 224,000、折舊費用 100,000、土地 98,000、薪資費用 252,000、水電費 70,000、利息費用 33,600、用品費用 36,400、廣告費 70,000；合計 $1,237,400。貸方：應付票據 $58,800、應付帳款 100,000、應付利息 16,800、應付薪資 15,400、預收收入 30,800、長期應付票據 182,000、累計折舊—運輸設備 100,000、股本 123,200、服務收入 588,000、利息收入 22,400、保留盈餘 0；合計 $1,237,400。試編製有得佳公司×9年損益表、權益變動表以及×9年12月31日之資產負債表。", "options": {}, "answer": "[待核对]", "explanation": "", "explanation_source": "待核对", "answer_source": "待核对", "note": ""}, {"no": "4-計5", "type": "計算", "chapter": "第四章", "source_image": "IMG_0352.HEIC", "text": "5. 華東公司在×1年12月31日，各帳戶餘額如下：現金 $14,550、應付帳款 21,000、應收帳款 33,000、文具用品 6,200、投資台美公司股票(長期持有) 50,000、應付票據 46,500、土地 780,000、建築物 230,000、累計折舊 6,400、股本 800,000、服務收入 44,000、保留盈餘 191,004、水電費用 3,754、薪資費用 26,400、應付票據(×4年到期) 35,000。試作：×1年12月31日分類資產負債表。", "options": {}, "answer": "[待核对]", "explanation": "", "explanation_source": "待核对", "answer_source": "待核对", "note": ""}, {"no": "4-計6", "type": "計算", "chapter": "第四章", "source_image": "IMG_0353.HEIC", "text": "6. 明德公司在×2年12月31日，各帳戶餘額如下：現金 $525,000、應收帳款 240,000、應收票據 312,000、文具用品 61,000、土地 1,400,000、建築物 800,000、累計折舊—建築物 200,000、設備 210,000、累計折舊—設備 75,000、應付帳款 43,000、應付票據 166,000、預收租金 26,500、應付票據(×5年到期) 620,000、股本 2,000,000、保留盈餘 418,100。編製×2年12月31日分類資產負債表。", "options": {}, "answer": "[待核对]", "explanation": "", "explanation_source": "待核对", "answer_source": "待核对", "note": "題目跨 IMG_0352/0353，續於 p90"}];
+const SUMMARY = {"total": 152, "type": {"簡答": 33, "選擇": 86, "計算": 33}, "chapter": {"第一章": 40, "第二章": 60, "第三章": 30, "第四章": 22}, "pending": 5, "pending_list": ["4-計2", "4-計3", "4-計4", "4-計5", "4-計6"], "partial_pending": ["4-計1"], "explanation_source": {"解答本": 61, "AI 解析": 86, "待核对": 5}};
+const CH = ['全部','第一章','第二章','第三章','第四章'];
+const CHS = ['第一章','第二章','第三章','第四章'];
+
+// ---------- state ----------
+const state = {
+  view: 'home',
+  studyKind: '簡答',
+  quiz: null,
+  study: null,
+  calc: null,
+  explainer: { type: '選擇', chapter: '全部' },
+};
+
+// ---------- helpers ----------
+function $(s){return document.querySelector(s);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function shuffle(a){const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}
+function isTF(q){const k=Object.keys(q.options||{});return k.length===2 && (k.includes('○')||k.includes('×'));}
+function isPending(q){return q.answer_source==='待核对' || q.answer==='[待核对]';}
+function srcBadge(q){
+  const s = q.explanation_source || '';
+  if(s==='解答本') return '<span class="badge src-解答本">解答本</span>';
+  if(s==='AI 解析') return '<span class="badge src-AI">AI 解析</span>';
+  if(s==='AI 判定') return '<span class="badge src-AI判定">AI 判定</span>';
+  if(s==='待核对') return '<span class="badge src-待核对">待核對</span>';
+  return '';
+}
+// localStorage
+function load(k, d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){return d;} }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function getRatings(){ return load('acc_ratings', {}); }
+function getDraws(){ return load('acc_draws', {}); }
+function setRating(no, score){ const r=getRatings(); r[no]=score; save('acc_ratings', r); }
+function chapterAvg(ch){ const r=getRatings(); let s=0,n=0;
+  QUESTIONS.forEach(q=>{ if(q.chapter===ch && r[q.no]!=null){ s+=r[q.no]; n++; } });
+  return n>0? s/n : null;
+}
+function chapterRatedCount(ch){ const r=getRatings();
+  return QUESTIONS.filter(q=>q.chapter===ch && r[q.no]!=null).length;
+}
+function chapterDrawCount(ch){ const d=getDraws(); return d[ch]||0; }
+function masteryReport(){
+  return CHS.map(ch=>{
+    const avg=chapterAvg(ch);
+    return { ch, avg, rated: chapterRatedCount(ch), draws: chapterDrawCount(ch) };
+  });
+}
+function recommendChapter(){
+  // lowest avg; unrated chapters first
+  const rep = masteryReport();
+  const unrated = rep.filter(r=>r.avg==null);
+  if(unrated.length) return unrated[0].ch;
+  rep.sort((a,b)=>a.avg-b.avg);
+  return rep[0].ch;
+}
+function starsHtml(avg){
+  if(avg==null) return '<span class="none">未評分</span>';
+  const v = Math.round(avg*2)/2;
+  let s='';
+  for(let i=1;i<=5;i++){
+    if(i<=Math.floor(v)) s='<span style="color:var(--gold)">&#9733;</span>'+s;
+    else if(v>=i-0.5) s='<span style="color:var(--gold)">&#9734;</span>'+s;
+    else s='<span style="color:var(--line)">&#9734;</span>'+s;
+  }
+  return s + ' <span style="color:var(--ink-soft);font-size:13px">('+avg.toFixed(1)+')</span>';
+}
+
+// ---------- router ----------
+function render(){
+  const app = $('#app');
+  if(state.view==='home') app.innerHTML=viewHome();
+  else if(state.view==='quiz-setup') app.innerHTML=viewQuizSetup();
+  else if(state.view==='quiz-play') app.innerHTML=viewQuizPlay();
+  else if(state.view==='quiz-result') app.innerHTML=viewQuizResult();
+  else if(state.view==='study-setup') app.innerHTML=viewStudySetup();
+  else if(state.view==='study-play') app.innerHTML=viewStudyPlay();
+  else if(state.view==='calc-play') app.innerHTML=viewCalcPlay();
+  else if(state.view==='explainer') app.innerHTML=viewExplainer();
+  bind();
+}
+
+// ---------- home ----------
+function viewHome(){
+  const choiceCount = QUESTIONS.filter(q=>q.type==='選擇').length;
+  const shortCount = QUESTIONS.filter(q=>q.type==='簡答').length;
+  const calcCount = QUESTIONS.filter(q=>q.type==='計算').length;
+  const shifei = QUESTIONS.filter(q=>q.type==='選擇' && isTF(q)).length;
+  const pending = QUESTIONS.filter(isPending).length;
+  const rep = masteryReport();
+  const rec = recommendChapter();
+  return `
+    <div class="hero">
+      <h1>會計學段考．題庫複習</h1>
+      <p>共 ${QUESTIONS.length} 題。選擇題對戰、簡答翻卡、計算題抽選，依熟練度加權出題。</p>
+      <div class="stats">
+        <div class="stat"><b>${QUESTIONS.length}</b><span>總題數</span></div>
+        <div class="stat"><b>${choiceCount}</b><span>選擇／是非</span></div>
+        <div class="stat"><b>${shortCount}</b><span>簡答／問答</span></div>
+        <div class="stat"><b>${calcCount}</b><span>計算題</span></div>
+        <div class="stat"><b>${pending + 1}</b><span>待核對（含 4-計1 部分）</span></div>
+      </div>
+    </div>
+    <div class="mastery">
+      <h2>熟練度報告</h2>
+      <div class="mastery-grid">
+        ${rep.map(r=>`<div class="m-row">
+          <div class="ch">${r.ch}</div>
+          <div class="stars">${starsHtml(r.avg)}</div>
+          <div class="meta">已評 ${r.rated} 題／抽題 ${r.draws} 次</div>
+        </div>`).join('')}
+      </div>
+      <div class="m-rec">建議優先複習：<b>${rec}</b>${rep.find(r=>r.ch===rec).avg==null?'（尚未評分）':'（平均最低）'}</div>
+    </div>
+    <div class="mode-grid">
+      <div class="mode-card">
+        <span class="tag">遊戲化測驗</span>
+        <h2>選擇題對戰</h2>
+        <p>${choiceCount-shifei} 選擇＋${shifei} 是非，立即判分、連對 Combo、錯題重練。</p>
+        <button class="go" data-go="quiz-setup">開始對戰</button>
+      </div>
+      <div class="mode-card">
+        <span class="tag">翻卡自學</span>
+        <h2>簡答題翻卡</h2>
+        <p>${shortCount} 題問答，正面題目、背面解答，五點自評。</p>
+        <button class="go" data-go="study-setup">開始翻卡</button>
+      </div>
+      <div class="mode-card">
+        <span class="tag">加權抽題</span>
+        <h2>計算題抽選</h2>
+        <p>${calcCount} 題，依章節熟練度加權抽題，附報表式解答與 PDF。</p>
+        <button class="go" data-go="calc-draw">立即抽題</button>
+      </div>
+      <div class="mode-card">
+        <span class="tag">瀏覽模式</span>
+        <h2>詳解總覽</h2>
+        <p>依題型與章節篩選，一次瀏覽所有題目、答案與詳解。</p>
+        <button class="go" data-go="explainer">開啟總覽</button>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- quiz setup ----------
+function viewQuizSetup(){
+  const list = QUESTIONS.filter(q=>q.type==='選擇');
+  return `
+    <button class="back" data-go="home">← 返回首頁</button>
+    <div class="panel">
+      <h2>選擇題對戰．開始設定</h2>
+      <div class="field">
+        <label>章節範圍（共 ${list.length} 題）</label>
+        <div class="chips" id="chChips">
+          ${CH.map((c,i)=>`<button class="chip ${i===0?'on':''}" data-ch="${c}">${c}</button>`).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>題數</label>
+        <div class="row">
+          <button class="chip on" data-count="all">全部</button>
+          <button class="chip" data-count="custom">自選</button>
+          <input type="number" id="countN" min="1" max="${list.length}" value="10" disabled>
+        </div>
+      </div>
+      <div class="field">
+        <label class="toggle"><input type="checkbox" id="rand" checked> 隨機出題</label>
+      </div>
+      <button class="btn-primary" id="startQuiz">開始作答</button>
+    </div>
+  `;
+}
+
+// ---------- quiz play ----------
+function viewQuizPlay(){
+  const q = state.quiz.list[state.quiz.idx];
+  const total = state.quiz.list.length;
+  const pct = Math.round(state.quiz.idx/total*100);
+  const opts = Object.entries(q.options||{});
+  const pend = isPending(q);
+  return `
+    <button class="back" data-go="home">← 結束並返回</button>
+    <div class="hud">
+      <div class="score">分數 ${state.quiz.score}</div>
+      <div class="combo">${state.quiz.combo>=2?'連對 ×'+state.quiz.combo:''}</div>
+      <div class="prog"><i style="width:${pct}%"></i></div>
+      <div class="ptext">第 ${state.quiz.idx+1} / ${total} 題</div>
+    </div>
+    <div class="qcard">
+      <div class="qmeta">
+        <span class="badge chapter">${esc(q.chapter)}</span>
+        <span class="badge no">${esc(q.no)}</span>
+        ${isTF(q)?'<span class="badge type">是非題</span>':'<span class="badge type">選擇</span>'}
+        ${pend?'<span class="badge src-待核对">待核對・不計分</span>':srcBadge(q)}
+      </div>
+      <div class="qtext">${esc(q.text)}</div>
+      <div class="opts" id="opts">
+        ${opts.map(([k,v])=>`<button class="opt" data-k="${esc(k)}"><span class="lbl">${esc(k)}</span>${esc(v)}</button>`).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <div class="explain" id="exp" style="display:none"></div>
+      <div class="next-row" style="display:none" id="nextRow">
+        <button class="btn-primary" id="nextBtn">${state.quiz.idx+1>=total?'查看結算':'下一題'}</button>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- quiz result ----------
+function viewQuizResult(){
+  const q = state.quiz;
+  const scored = q.answered - q.pendingCount;
+  const rate = scored>0 ? Math.round(q.correct/scored*100) : 0;
+  return `
+    <button class="back" data-go="home">← 返回首頁</button>
+    <div class="result-hero">
+      <div class="big">${q.score}</div>
+      <div class="sub">本次得分（連對加分已計入）</div>
+      <div class="rate">正確率 ${rate}%　｜　答對 ${q.correct} / ${scored}　｜　最高連對 ${q.maxCombo}${q.pendingCount?`　｜　待核對 ${q.pendingCount} 題`:''}</div>
+      <div class="next-row" style="justify-content:center">
+        <button class="btn-primary" data-go="quiz-setup">再挑戰</button>
+        <button class="btn-ghost" id="retryWrong" ${q.wrong.length===0?'disabled':''}>只練錯題（${q.wrong.length}）</button>
+      </div>
+    </div>
+    ${q.wrong.length?`
+      <div class="panel">
+        <h2>錯題清單（點一下展開詳解）</h2>
+        <div class="wrong-list" id="wrongList">
+          ${q.wrong.map((w,i)=>`
+            <div class="wrong-item" data-i="${i}">
+              <b>${esc(w.no)}</b>　${esc(w.chapter)}　正解：${esc(w.answer)}<br>
+              ${esc(w.text).slice(0,100)}${w.text.length>100?'…':''}
+              <div class="wrong-detail"><b>詳解：</b>\n${esc(w.explanation||'（無詳解）')}</div>
+            </div>`).join('')}
+        </div>
+      </div>`:''}
+  `;
+}
+
+// ---------- study (short-answer flip card) setup ----------
+function viewStudySetup(){
+  const list = QUESTIONS.filter(q=>q.type==='簡答');
+  return `
+    <button class="back" data-go="home">← 返回首頁</button>
+    <div class="panel">
+      <h2>簡答題翻卡．開始設定</h2>
+      <div class="field">
+        <label>章節範圍（共 ${list.length} 題）</label>
+        <div class="chips" id="chChips">
+          ${CH.map((c,i)=>`<button class="chip ${i===0?'on':''}" data-ch="${c}">${c}</button>`).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label class="toggle"><input type="checkbox" id="rand" checked> 隨機排序</label>
+      </div>
+      <button class="btn-primary" id="startStudy">開始翻卡</button>
+    </div>
+  `;
+}
+
+// ---------- study play ----------
+function viewStudyPlay(){
+  const s = state.study;
+  const q = s.list[s.idx];
+  const pend = isPending(q);
+  const rated = getRatings()[q.no];
+  return `
+    <button class="back" data-go="home">← 結束並返回</button>
+    <div class="hud">
+      <div class="score">第 ${s.idx+1} / ${s.list.length} 題</div>
+      <div class="combo" style="color:var(--good)">已評 ${Object.keys(getRatings()).length} 題</div>
+      <div class="prog"><i style="width:${Math.round(s.idx/s.list.length*100)}%"></i></div>
+      <div class="ptext">${esc(q.chapter)}</div>
+    </div>
+    <div class="qcard">
+      <div class="qmeta">
+        <span class="badge chapter">${esc(q.chapter)}</span>
+        <span class="badge no">${esc(q.no)}</span>
+        <span class="badge type">簡答題</span>
+        ${pend?'<span class="badge src-待核对">待核對</span>':srcBadge(q)}
+      </div>
+      <div class="qtext">${esc(q.text)}</div>
+      <button class="flip-btn" id="flipBtn">翻到背面看解答</button>
+      <div class="flip-face" id="backFace">
+        <div class="explain" style="white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-left:3px solid var(--gold);max-height:400px">
+          ${pend?'<span style="color:var(--pend)">此題解答本未收錄，答案待核對。</span>':esc(q.answer)}
+        </div>
+        ${pend?'':`<div class="rating" id="ratingBox">
+          <div class="rlab">這題你掌握到幾分？（1～5）</div>
+          <div class="rstars" id="rstars">
+            ${[1,2,3,4,5].map(n=>`<button class="rstar" data-n="${n}">${n}</button>`).join('')}
+          </div>
+          <div class="rsub"><button id="rateSubmit">送出評分</button></div>
+        </div>`}
+        <div class="rated" id="ratedMsg" style="${rated?'':'display:none'}">你已評此題 ${rated} 分</div>
+        <div class="next-row" id="nextRow" style="display:none">
+          <button class="btn-primary" id="nextBtn">${s.idx+1>=s.list.length?'完成':'下一題'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- calc play (weighted draw) ----------
+function viewCalcPlay(){
+  const c = state.calc;
+  const q = c.current;
+  if(!q){
+    return `
+      <button class="back" data-go="home">← 返回首頁</button>
+      <div class="panel">
+        <h2>計算題抽選</h2>
+        <div class="field">
+          <label>章節範圍</label>
+          <div class="chips" id="chChips">
+            ${CH.map((c,i)=>`<button class="chip ${c===c?'':''}" data-ch="${c}" ${c===c?'':''}>${c}</button>`).join('')}
+          </div>
+        </div>
+        <div class="mastery" style="box-shadow:none;margin:0 0 14px">
+          <div class="mastery-grid">
+            ${masteryReport().map(r=>`<div class="m-row">
+              <div class="ch">${r.ch}</div>
+              <div class="stars">${starsHtml(r.avg)}</div>
+              <div class="meta">已評 ${r.rated} ／抽 ${r.draws}</div>
+            </div>`).join('')}
+          </div>
+        </div>
+        <button class="btn-primary" id="drawBtn" style="width:100%;font-size:18px;padding:16px">抽一題</button>
+      </div>
+    `;
+  }
+  const pend = isPending(q);
+  const rated = getRatings()[q.no];
+  // calc page number = index in calc list + 1
+  const calcIdx = calcList().indexOf(q) + 1;
+  return `
+    <button class="back" data-go="home">← 返回首頁</button>
+    <div class="hud">
+      <div class="score">計算題抽選</div>
+      <div class="combo" style="color:var(--gold)">建議優先：${recommendChapter()}</div>
+      <div class="ptext">已抽 ${c.count} 題</div>
+    </div>
+    <div class="qcard">
+      <div class="qmeta">
+        <span class="badge chapter">${esc(q.chapter)}</span>
+        <span class="badge no">${esc(q.no)}</span>
+        <span class="badge type">計算題</span>
+        ${pend?'<span class="badge src-待核对">待核對</span>':srcBadge(q)}
+      </div>
+      <div class="qtext">${esc(q.text)}</div>
+      ${pend?`<div class="pend-note">待核對：解答本未拍到本題解答。</div>`:`<button class="flip-btn" id="flipBtn">翻到背面看解答</button>`}
+      <div class="flip-face" id="backFace">
+        ${pend?'':renderCalcAnswer(q, calcIdx)}
+        ${pend?'':'<div class="rating" id="ratingBox">' +
+          '<div class="rlab">這題你掌握到幾分？（1～5）</div>' +
+          '<div class="rstars" id="rstars">' + [1,2,3,4,5].map(n=>`<button class="rstar" data-n="${n}">${n}</button>`).join('') + '</div>' +
+          '<div class="rsub"><button id="rateSubmit">送出評分</button></div></div>'}
+        <div class="rated" id="ratedMsg" style="${rated?'':'display:none'}">你已評此題 ${rated} 分</div>
+        <div class="next-row" id="nextRow" style="display:none">
+          <button class="btn-primary" id="drawAgain">再抽一題</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function calcList(){
+  return QUESTIONS.filter(q=>q.type==='計算');
+}
+
+// ---------- calc answer renderer ----------
+function renderCalcAnswer(q, pageNo){
+  const ans = q.answer || '';
+  // try to parse into report
+  const parsed = parseReport(ans);
+  let html = '';
+  // partial-pending note (e.g. 4-計1: 結帳分錄已拍到，結帳後試算表未拍到)
+  if(q.no === '4-計1'){
+    html += '<div class="pend-note" style="margin-bottom:10px">部分待核對：結帳分錄已拍到解答本，但「結帳後試算表」部分未拍到。</div>';
+  }
+  if(parsed){
+    html += '<div class="rpt">';
+    if(parsed.title) html += `<div class="rpt-head">${esc(parsed.title)}</div>`;
+    parsed.rows.forEach(r=>{
+      html += `<div class="rpt-row ${r.total?'total':''}"><span>${esc(r.label)}</span><span class="amt ${r.neg?'neg':''}">${esc(r.amount)}</span></div>`;
+    });
+    if(parsed.note) html += `<div class="rpt-note">${esc(parsed.note)}</div>`;
+    html += '</div>';
+  } else {
+    html += `<div class="explain" style="white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-left:3px solid var(--gold);max-height:400px">${esc(ans)}</div>`;
+  }
+  // PDF link (only if not pending)
+  html += `<a class="pdf-link" href="會計學_計算題解答圖表.pdf" target="_blank">開啟 PDF 解答（第 ${pageNo} 頁）</a>`;
+  return html;
+}
+
+// parse report text like "收益—服務收入 $50,000；營業費用—薪資費用 $15,000、...；本期淨利 $29,300。"
+function parseReport(text){
+  if(!text) return null;
+  // Look for title pattern: "XXX公司/商店 報表名 日期"
+  let title = '';
+  const titleM = text.match(/^([^\n。；;：:]{4,40}?(公司|商店|行|號|企業)[^\n。；;：:]{0,30}?(表|損益|資產負債|權益變動|試算)[^\n。；;：:]{0,30})/);
+  if(titleM) title = titleM[1];
+  // Split by ；;。
+  const segments = text.split(/[；;。\n]/).map(s=>s.trim()).filter(Boolean);
+  const rows = [];
+  let note = '';
+  segments.forEach(seg=>{
+    // try to find label + amount pattern: ...$NNN,NNN or ...(NNN,NNN)
+    const m = seg.match(/^(.{2,40}?)[：:]?\s*[\$￥]?\s*\(?([\d,]+)\)?\s*$/);
+    if(m){
+      const label = m[1].replace(/[—–\-]$/,'').trim();
+      let amt = m[2];
+      const neg = seg.includes('(') || seg.includes('( ');
+      const total = /合計|淨利|淨損|總額|本期/.test(seg);
+      rows.push({ label, amount: (neg?'(':'')+'$'+amt+(neg?')':''), neg, total });
+    } else if(seg.length > 4 && rows.length < 1){
+      // could be a sub-header like "收益—" or "營業費用—"
+      if(/^(收益|營業費用|費用|資產|負債|權益|期初|期末|本期|借方|貸方|現金|非營業)/.test(seg)){
+        rows.push({ label: seg, amount:'', total:false });
+      }
+    } else if(seg.length > 2){
+      note += (note?'\n':'') + seg;
+    }
+  });
+  if(rows.length < 2) return null;
+  return { title, rows, note };
+}
+
+// ---------- explainer ----------
+function viewExplainer(){
+  const f = state.explainer;
+  let list = QUESTIONS.filter(q=>q.type===f.type);
+  if(f.chapter!=='全部') list = list.filter(q=>q.chapter===f.chapter);
+  return `
+    <button class="back" data-go="home">← 返回首頁</button>
+    <div class="panel">
+      <h2>詳解總覽</h2>
+      <div class="field">
+        <label>題型</label>
+        <div class="chips" id="expType">
+          ${['選擇','簡答','計算'].map(t=>`<button class="chip ${f.type===t?'on':''}" data-t="${t}">${t}</button>`).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>章節</label>
+        <div class="chips" id="expCh">
+          ${CH.map(c=>`<button class="chip ${f.chapter===c?'on':''}" data-c="${c}">${c}</button>`).join('')}
+        </div>
+      </div>
+      <div class="exp-list" id="expList">
+        ${list.map(q=>`
+          <div class="exp-item">
+            <div class="qmeta">
+              <span class="badge chapter">${esc(q.chapter)}</span>
+              <span class="badge no">${esc(q.no)}</span>
+              ${isTF(q)?'<span class="badge type">是非</span>':''}
+              ${isPending(q)?'<span class="badge src-待核对">待核對</span>':srcBadge(q)}
+            </div>
+            <div class="q">${esc(q.text)}</div>
+            ${q.options && Object.keys(q.options).length ? `<div class="a"><b>選項：</b><br>${Object.entries(q.options).map(([k,v])=>esc(k)+'. '+esc(v)).join('<br>')}</div>` : ''}
+            <div class="a"><b>答案：</b>${isPending(q)?'<span style="color:var(--pend)">待核對</span>':esc(q.answer)}</div>
+            ${q.explanation?`<div class="e"><b>詳解：</b>\n${esc(q.explanation)}</div>`:''}
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ---------- bind ----------
+function bind(){
+  document.querySelectorAll('[data-go]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const go = b.dataset.go;
+      if(go==='calc-draw'){ state.calc = { current:null, count:0, chapter:'全部' }; state.view='calc-play'; }
+      else if(go==='study-setup') state.studyKind='簡答', state.view='study-setup';
+      else state.view = go;
+      if(go==='home'){ state.quiz=null; state.study=null; state.calc=null; }
+      render();
+    });
+  });
+  // chapter chips (quiz setup, study setup)
+  document.querySelectorAll('#chChips .chip').forEach(c=>{
+    c.addEventListener('click',()=>{
+      document.querySelectorAll('#chChips .chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      if(state.view==='calc-play' && state.calc){ state.calc.chapter = c.dataset.ch; }
+    });
+  });
+  // count chips
+  document.querySelectorAll('[data-count]').forEach(c=>{
+    c.addEventListener('click',()=>{
+      document.querySelectorAll('[data-count]').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      const n = $('#countN');
+      if(n) n.disabled = (c.dataset.count!=='custom');
+    });
+  });
+  // start quiz
+  const sb = $('#startQuiz');
+  if(sb) sb.addEventListener('click',()=>{
+    const ch = document.querySelector('#chChips .chip.on').dataset.ch;
+    const cnt = document.querySelector('[data-count].on').dataset.count;
+    const rand = $('#rand').checked;
+    let list = QUESTIONS.filter(q=>q.type==='選擇');
+    if(ch!=='全部') list = list.filter(q=>q.chapter===ch);
+    if(rand) list = shuffle(list);
+    if(cnt==='custom'){
+      const n = Math.max(1, Math.min(list.length, parseInt($('#countN').value||'10',10)));
+      list = list.slice(0,n);
+    }
+    state.quiz = { list, _orig: list, idx:0, score:0, combo:0, maxCombo:0, correct:0, answered:0, pendingCount:0, wrong:[] };
+    state.view='quiz-play'; render();
+  });
+  // start study
+  const ss = $('#startStudy');
+  if(ss) ss.addEventListener('click',()=>{
+    const ch = document.querySelector('#chChips .chip.on').dataset.ch;
+    const rand = $('#rand').checked;
+    let list = QUESTIONS.filter(q=>q.type==='簡答');
+    if(ch!=='全部') list = list.filter(q=>q.chapter===ch);
+    if(rand) list = shuffle(list);
+    state.study = { list, kind:'簡答', idx:0 };
+    state.view='study-play'; render();
+  });
+  // quiz options
+  document.querySelectorAll('#opts .opt').forEach(btn=>{
+    btn.addEventListener('click',()=>answerChoice(btn.dataset.k));
+  });
+  const nb = $('#nextBtn');
+  if(nb) nb.addEventListener('click',()=>{
+    state.quiz.idx++;
+    if(state.quiz.idx>=state.quiz.list.length){ state.view='quiz-result'; saveBest(); }
+    render();
+  });
+  const rw = $('#retryWrong');
+  if(rw) rw.addEventListener('click',()=>{
+    const old = state.quiz;
+    const idx = old.wrong.map(w=>w.idx);
+    const newList = idx.map(i=>old._orig[i]).filter(Boolean);
+    state.quiz = { list: newList, _orig: newList, idx:0, score:0, combo:0, maxCombo:0, correct:0, answered:0, pendingCount:0, wrong:[] };
+    state.view='quiz-play'; render();
+  });
+  // wrong list expand
+  document.querySelectorAll('.wrong-item').forEach(it=>{
+    it.addEventListener('click',()=>it.classList.toggle('open'));
+  });
+  // flip button (study & calc)
+  const fb = $('#flipBtn');
+  if(fb) fb.addEventListener('click',()=>{
+    $('#backFace').classList.add('show');
+    fb.style.display='none';
+  });
+  // rating stars
+  let selected = 0;
+  document.querySelectorAll('#rstars .rstar').forEach(s=>{
+    s.addEventListener('click',()=>{
+      selected = parseInt(s.dataset.n,10);
+      document.querySelectorAll('#rstars .rstar').forEach(x=>{
+        x.classList.toggle('on', parseInt(x.dataset.n,10)<=selected);
+      });
+    });
+  });
+  const rs = $('#rateSubmit');
+  if(rs) rs.addEventListener('click',()=>{
+    if(selected===0){ return; }
+    let q;
+    if(state.view==='study-play') q = state.study.list[state.study.idx];
+    else if(state.view==='calc-play') q = state.calc.current;
+    if(q){ setRating(q.no, selected); }
+    $('#ratedMsg').textContent = '你已評此題 '+selected+' 分';
+    $('#ratedMsg').style.display='block';
+    $('#ratingBox').style.display='none';
+    $('#nextRow').style.display='flex';
+  });
+  // study next
+  const snb = $('#nextBtn');
+  if(snb && state.view==='study-play'){
+    snb.addEventListener('click',()=>{
+      state.study.idx++;
+      if(state.study.idx>=state.study.list.length){ state.view='home'; }
+      render();
+    });
+  }
+  // calc draw again
+  const da = $('#drawAgain');
+  if(da) da.addEventListener('click',()=>{ doDraw(); });
+  // initial draw button
+  const db = $('#drawBtn');
+  if(db) db.addEventListener('click',()=>{
+    const ch = document.querySelector('#chChips .chip.on').dataset.ch;
+    state.calc.chapter = ch;
+    doDraw();
+  });
+  // explainer filters
+  document.querySelectorAll('#expType .chip').forEach(c=>{
+    c.addEventListener('click',()=>{ state.explainer.type=c.dataset.t; render(); });
+  });
+  document.querySelectorAll('#expCh .chip').forEach(c=>{
+    c.addEventListener('click',()=>{ state.explainer.chapter=c.dataset.c; render(); });
+  });
+}
+
+// ---------- weighted draw ----------
+function doDraw(){
+  const chFilter = state.calc.chapter || '全部';
+  // weighted chapter selection
+  const weights = {};
+  CHS.forEach(ch=>{
+    const avg = chapterAvg(ch);
+    const w = avg==null ? 1.0 : Math.max(0.1, 1 - avg/5);
+    weights[ch] = w;
+  });
+  // build candidate list per chapter
+  const byCh = {};
+  CHS.forEach(ch=>{
+    byCh[ch] = QUESTIONS.filter(q=>q.type==='計算' && q.chapter===ch && !isPending(q));
+  });
+  let pool;
+  if(chFilter!=='全部'){
+    pool = byCh[chFilter];
+  } else {
+    // weighted pick chapter
+    const totalW = CHS.reduce((s,c)=>s+weights[c],0);
+    let r = Math.random()*totalW, picked = CHS[0];
+    for(const c of CHS){ r -= weights[c]; if(r<=0){ picked=c; break; } }
+    pool = byCh[picked];
+  }
+  if(!pool || pool.length===0){
+    // fallback: all non-pending calc
+    pool = QUESTIONS.filter(q=>q.type==='計算' && !isPending(q));
+  }
+  const q = pool[Math.floor(Math.random()*pool.length)];
+  state.calc.current = q;
+  state.calc.count++;
+  // increment draw count for chapter
+  const d = getDraws();
+  d[q.chapter] = (d[q.chapter]||0)+1;
+  save('acc_draws', d);
+  render();
+}
+
+function saveBest(){
+  try{
+    const k='acc_best';
+    const cur = state.quiz.score;
+    const prev = parseInt(localStorage.getItem(k)||'0',10);
+    if(cur>prev) localStorage.setItem(k, String(cur));
+  }catch(e){}
+}
+
+function answerChoice(k){
+  const q = state.quiz.list[state.quiz.idx];
+  const fb = $('#fb');
+  const opts = document.querySelectorAll('#opts .opt');
+  opts.forEach(o=>o.disabled=true);
+  state.quiz.answered++;
+  const exp = $('#exp');
+  if(isPending(q)){
+    state.quiz.pendingCount++;
+    fb.className = 'feedback show pend';
+    fb.innerHTML = '<b>此題解答本未收錄，答案待核對。</b> 本題不計分。';
+    if(q.explanation){ exp.style.display='block'; exp.innerHTML = '<b>AI 判定（待核對解答本）：</b>\n'+esc(q.explanation); }
+    $('#nextRow').style.display='flex';
+    return;
+  }
+  const correct = q.answer;
+  if(k===correct){
+    const gain = 10 + (state.quiz.combo>=2 ? state.quiz.combo*2 : 0);
+    state.quiz.score += gain;
+    state.quiz.combo++;
+    state.quiz.maxCombo = Math.max(state.quiz.maxCombo, state.quiz.combo);
+    state.quiz.correct++;
+    fb.className = 'feedback show good';
+    fb.innerHTML = `<b>答對了！</b> +${gain} 分${state.quiz.combo>=2?'（連對 ×'+state.quiz.combo+'）':''}`;
+    opts.forEach(o=>{ if(o.dataset.k===correct) o.classList.add('correct'); });
+  } else {
+    state.quiz.combo = 0;
+    fb.className = 'feedback show bad';
+    fb.innerHTML = `<b>答錯。</b> 正解是 <b>${esc(correct)}</b>。`;
+    opts.forEach(o=>{
+      if(o.dataset.k===correct) o.classList.add('correct');
+      if(o.dataset.k===k) o.classList.add('wrong');
+    });
+    state.quiz.wrong.push({ idx: state.quiz.list.indexOf(q), no:q.no, chapter:q.chapter, text:q.text, answer:q.answer, explanation:q.explanation });
+  }
+  if(q.explanation){ exp.style.display='block'; exp.innerHTML = '<b>詳解：</b>\n'+esc(q.explanation); }
+  $('#nextRow').style.display='flex';
+}
+
+// init
+render();
+</script>
+</body>
+</html>
