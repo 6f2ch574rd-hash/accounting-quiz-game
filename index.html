@@ -129,6 +129,17 @@ input[type=search]{width:100%;padding:10px 12px;border:1px solid var(--line);bor
 .badge.src-課堂講授{background:var(--ai-bg);color:var(--ai)}
 .badge.type{background:var(--gold-soft);color:var(--ink)}
 .qtext{font-size:16.5px;line-height:1.85;white-space:pre-wrap;margin:2px 0 14px}
+.qbody{font-size:16.5px;line-height:1.85;margin:2px 0 14px}
+.qbody .q-p{margin:0 0 9px}
+.qbody .q-cap{font-size:14px;font-weight:700;color:var(--teal-deep);margin:12px 0 6px;letter-spacing:.02em}
+.qbody .stmt{padding:10px 13px;margin:6px 0}
+.qbody .stmt .st-row{padding:2px 0;font-size:15.5px}
+.qbody .stmt .st-amt{font-size:15px}
+.q-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0}
+.q-item{display:flex;gap:9px;margin:7px 0}
+.q-item .q-num{flex:0 0 auto;color:var(--teal-deep);font-weight:700;font-family:"SF Mono",Menlo,monospace;font-size:.92em;min-width:2.1em}
+.q-item .q-txt{flex:1 1 auto;min-width:0}
+
 .opts{display:flex;flex-direction:column;gap:9px}
 .opt{text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:10px;
   padding:11px 13px;font-size:15px;line-height:1.6;white-space:pre-wrap;color:var(--ink)}
@@ -191,7 +202,11 @@ input[type=search]{width:100%;padding:10px 12px;border:1px solid var(--line);bor
 .rev-item.open .dt{display:block}
 .exp-item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin-bottom:10px}
 .exp-item .q{font-size:14.5px;line-height:1.7;white-space:pre-wrap;margin-bottom:7px}
-.exp-item .a{font-size:13px;white-space:pre-wrap;background:var(--paper-2);padding:9px;border-radius:6px;margin-bottom:5px}
+.exp-item .a{font-size:13px;white-space:pre-wrap;background:var(--paper-2);padding:9px 11px;border-radius:6px;margin-bottom:5px}
+.exp-item .qbody{font-size:13.5px;line-height:1.8;margin:0}
+.exp-item .qbody .q-p{margin:0 0 6px}
+.exp-item .qbody .q-cap{font-size:12.5px;margin:8px 0 4px}
+.exp-item .qbody .q-item{margin:4px 0}
 .exp-item .e{font-size:12.5px;white-space:pre-wrap;color:var(--ink-soft);padding-left:9px;border-left:3px solid var(--gold)}
 .pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:14px;font-size:13px;color:var(--ink-soft)}
 .pager button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 13px}
@@ -243,6 +258,8 @@ body.dark .btn-primary,body.dark .mode-card .go,body.dark .flip-btn,body.dark .r
 .st-row .st-lab{min-width:0;word-break:break-word}
 .st-row .st-amt{font-family:"SF Mono",Menlo,monospace;white-space:nowrap;color:var(--ink)}
 .st-row.st-section{font-weight:700;color:var(--teal-deep);margin-top:5px}
+.calc-note{background:var(--paper-2);border-radius:8px;padding:9px 12px;margin:8px 0;font-size:.92em;color:var(--ink-soft)}
+.calc-note .st-row.st-section{font-weight:600;color:var(--ink-soft);margin:0}
 .st-row.total{border-top:1px solid var(--line);margin-top:5px;padding-top:6px;font-weight:700}
 .st-row.total .st-amt{color:var(--teal-deep)}
 .fx{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
@@ -262,9 +279,23 @@ body.dark .btn-primary,body.dark .mode-card .go,body.dark .flip-btn,body.dark .r
   .mode-grid{grid-template-columns:1fr}
   .qcard{padding:15px}
   .qtext{font-size:15.5px}
+  .qbody{font-size:15.5px}
+  .q-cols{grid-template-columns:1fr}
   .pl-row{grid-template-columns:62px 1fr 66px}
   .brand{font-size:18px}
   .brand small{display:none}
+  /* 分錄表 / 試算表在手機不橫向溢出 */
+  .jr{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .jr table{font-size:.86em}
+  .jr td{padding:4px 5px}
+  .jr td.date{padding:4px 5px;font-size:.82em}
+  .jr td.item{width:38%}
+  .jr td.item.cr{padding-left:12px}
+  .jr td.num{width:22%;font-size:.9em}
+  .jr thead th{padding:5px 5px;font-size:10.5px}
+  .stmt{padding:9px 10px}
+  .stmt .st-row{gap:6px}
+  .qbody .stmt .st-row{font-size:14.5px}
 }
 @media print{.topbtns,.fab,.back,.next-row{display:none}}
 </style>
@@ -554,7 +585,7 @@ function viewQuizPlay(){
       <span class="badge type">${isTF(q)?'是非題':'選擇題'}</span>
       ${pend?'<span class="badge src-待核对">待核對・不計分</span>':srcBadge(q)}
     </div>
-    <div class="qtext">${esc(q.text)}</div>
+    <div class="qtext-wrap">${renderQText(q)}</div>
     <div class="opts" id="opts">
       ${item.keys.map((k,ix)=>{
         const v=q.options[k];
@@ -721,11 +752,11 @@ function viewStudyPlay(){
       <span class="badge type">簡答題</span>
       ${pend?'<span class="badge src-待核对">待核對</span>':srcBadge(q)}
     </div>
-    <div class="qtext">${esc(q.text)}</div>
+    <div class="qtext-wrap">${renderQText(q)}</div>
     ${flipped?'':`<button class="flip-btn" data-act="flip">翻到背面看解答（空白鍵）</button>`}
     <div class="flip-face ${flipped?'show':''}">
       <div class="explain" style="max-height:none;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold)">
-        ${pend?'<span style="color:var(--pend)">此題解答本未收錄，答案待核對。</span>':esc(q.answer)}
+        ${pend?'<span style="color:var(--pend)">此題解答本未收錄，答案待核對。</span>':renderAnsText(q.answer)}
       </div>
       ${pend?'':`<div class="rating" id="ratingBox">
         <div class="rlab">這題你掌握到幾分？（1～5）</div>
@@ -807,7 +838,7 @@ function viewCalcPlay(){
       <span class="badge type">計算題</span>
       ${pend?'<span class="badge src-待核对">待核對</span>':srcBadge(q)}
     </div>
-    <div class="qtext">${esc(q.text)}</div>
+    <div class="qtext-wrap">${renderQText(q)}</div>
     ${pend
       ? `<div class="pend-note">待核對：解答本未拍到本題解答。</div>`
       : (c.flipped ? '' : `<button class="flip-btn" data-act="flip">翻到背面看解答（空白鍵）</button>`)}
@@ -834,6 +865,247 @@ function calcPage(q){
   let n=0;
   for(const x of QUESTIONS){ if(isPending(x)) continue; if(x.type==='計算') n++; if(x.no===q.no) return n; }
   return 1;
+}
+
+// ---------- 題目排版 ----------
+function qAmt(str){
+  var t = String(str).trim().replace(/[，,。]$/,'');
+  var am = t.match(/([$＄])?\s*((?:[(（][\d,]+[)）])|[\d][\d,]*(?:\.[\d]+)?)\s*$/);
+  if(am && /\d/.test(am[2]) && t.slice(0, am.index).trim()){
+    return { lab: t.slice(0, am.index).trim().replace(/[：:]$/,''), amt: (am[1]||'') + am[2] };
+  }
+  return { lab: t, amt: '' };
+}
+
+function qRows(list){
+  var parts = String(list).split('、').map(function(x){ return x.trim(); }).filter(Boolean);
+  if(parts.length < 2) return null;
+  return parts.map(qAmt);
+}
+
+function qListRows(tail){
+  var rows = [];
+  String(tail).split('；').map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(p){
+    var rr = qRows(p);
+    if(rr) rows = rows.concat(rr);
+    else rows.push(qAmt(p));
+  });
+  return rows;
+}
+
+function qItemBody(body){
+  var parts = String(body).split('、').map(function(x){ return x.trim(); }).filter(Boolean);
+  if(parts.length >= 3){
+    var rows = parts.map(qAmt);
+    if(rows.filter(function(r){ return r.amt; }).length >= 2) return qDatPanel(rows, '');
+  }
+  return esc(body);
+}
+
+function qDatPanel(rows, total){
+  var inner = '';
+  rows.forEach(function(r){
+    inner += '<div class="st-row"><span class="st-lab">' + esc(r.lab) + '</span><span class="st-amt">' + esc(r.amt) + '</span></div>';
+  });
+  if(total) inner += '<div class="st-row total"><span class="st-lab">合計</span><span class="st-amt">' + esc(total) + '</span></div>';
+  return '<div class="stmt">' + inner + '</div>';
+}
+
+function qSegs(raw){
+  var sents = splitTop(raw, function(s, i){
+    var ch = s.charAt(i);
+    return ch === '。' || ch === '\n';
+  }).map(function(x){ return x.trim(); }).filter(Boolean);
+  var out = [];
+  sents.forEach(function(seg){
+    var parts = splitTop(seg, function(str, i){
+      if(str.charAt(i) !== '；') return false;
+      var rest = str.slice(i + 1);
+      return /^\s*(?:(?:調整前|調整後)?(?:借方|貸方)|合計|總計|[(（]\d+[)）])/.test(rest);
+    });
+    parts.forEach(function(p){
+      p = p.trim();
+      if(!p) return;
+      if(p.length > 120 && /[（(]/.test(p)){
+        p.replace(/^（/,'').replace(/）/,'').split(/。|；|\n/).map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(x){ out.push(x); });
+      } else {
+        out.push(p);
+      }
+    });
+  });
+  return out;
+}
+
+function renderAnsText(t){
+  var raw = String(t == null ? '' : t).replace(/\r/g,'').trim();
+  if(!raw) return '';
+  function para(txt){
+    var pt = String(txt).trim().replace(/[。]+$/,'');
+    if(/[：:]$/.test(pt)) return '<div class="q-p">' + esc(pt) + '</div>';
+    if(/(其中|如下|下列|如下列|分別為|可分為|有下列|以下|包含|包括|如下所述)$/.test(pt.replace(/[，,、]$/,''))){
+      return '<div class="q-p">' + esc(pt.replace(/[，,、]$/,'') + '：') + '</div>';
+    }
+    pt = pt.replace(/[，,、]$/,'');
+    return '<div class="q-p">' + esc(pt + '。') + '</div>';
+  }
+  var parts = raw.split(/(?=[（(]\d+[）)])/).map(function(x){ return x.trim(); }).filter(Boolean);
+  var html = '';
+  if(parts.length >= 2 && /^[（(]\d+[）)]/.test(parts[1])){
+    var lead = parts.shift().trim();
+    splitTop(lead, function(str, i){ var ch = str.charAt(i); return ch === '。' || ch === '\n'; })
+      .map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(x){ html += para(x); });
+    parts.forEach(function(x){
+      var m = x.match(/^[（(](\d+)[）)]\s*(.*)$/);
+      html += '<div class="q-item"><span class="q-num">' + esc(m ? ('(' + m[1] + ')') : '') + '</span><span class="q-txt">' + qItemBody(m ? m[2] : x) + '</span></div>';
+    });
+  } else {
+    splitTop(raw, function(str, i){ var ch = str.charAt(i); return ch === '。' || ch === '\n'; })
+      .map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(x){ html += para(x); });
+  }
+  return '<div class="qbody">' + html + '</div>';
+}
+
+function renderQText(q){
+  var raw = String((q && q.text) || '').replace(/\r/g,'').replace(/^\s*\d+\.\s*/,'').trim();
+  var blocks = [];
+
+  qSegs(raw).forEach(function(seg){
+    var t = seg.replace(/^[，,、]+/,'').replace(/^[）)]/,'').trim();
+    if(!t) return;
+
+    var mTitle = t.match(/^(.*?)【([^】]{1,40})】(.*)$/);
+    if(mTitle){
+      var head = mTitle[1].trim().replace(/[：:]$/,'');
+      if(head) blocks.push({ type:'p', txt:head });
+      blocks.push({ type:'cap', txt:mTitle[2] });
+      t = mTitle[3].trim();
+      if(!t) return;
+    }
+
+    var mSide = t.match(/^((?:調整前|調整後)?(借方|貸方))[：:](.*)$/);
+    if(mSide){ blocks.push({ type:'side', label:mSide[1], txt:mSide[3] }); return; }
+
+    var mTot = t.match(/^(合計|總計)\s*([$＄]?[\d,]+)\s*[／\/]\s*([$＄]?[\d,]+)$/);
+    if(mTot){ blocks.push({ type:'tot', txt:mTot[2] + ' ／ ' + mTot[3] }); return; }
+
+    if(/^[（(]\d+[）)]/.test(t)){
+      t.split(/(?=[（(]\d+[）)])/).map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(x){
+        blocks.push({ type:'item', txt:x });
+      });
+      return;
+    }
+
+    var mPre = t.match(/^([^\d（(、，；]{1,10})[（(](\d+)[）)](.*)$/);
+    if(mPre && mPre[1].trim() && !/、|，/.test(mPre[1]) && !/[（(]\d+[）)]/.test(mPre[3])){
+      blocks.push({ type:'cap', txt:mPre[1].trim() });
+      blocks.push({ type:'item', txt:'(' + mPre[2] + ')' + mPre[3] });
+      return;
+    }
+
+    var mCol = t.match(/^(.{0,46}?)[：:]\s*(.*)$/);
+    if(mCol){
+      var tail = mCol[2];
+      var rows = qListRows(tail);
+      var withAmt = rows.filter(function(r){ return r.amt; }).length;
+      if(rows.length >= 2 && withAmt >= Math.min(2, rows.length)){
+        var hd = mCol[1].trim();
+        if(hd) blocks.push({ type: hd.length <= 14 ? 'cap' : 'p', txt:hd });
+        blocks.push({ type:'dat', rows:rows });
+        return;
+      }
+      if(/^[（(]\d+[）)]/.test(tail)){
+        var hd0 = mCol[1].trim();
+        if(hd0){ blocks.push({ type: hd0.length <= 14 ? 'cap' : 'p', txt:hd0 }); }
+        tail.split(/(?=[（(]\d+[）)])/).map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(x){
+          blocks.push({ type:'item', txt:x });
+        });
+        return;
+      }
+      if(/、/.test(tail) && tail.length > 40){
+        var hd2 = mCol[1].trim();
+        if(hd2) blocks.push({ type: hd2.length <= 14 ? 'cap' : 'p', txt:hd2 });
+        blocks.push({ type:'p', txt:tail });
+        return;
+      }
+    }
+
+    if((t.match(/；/g)||[]).length >= 2){
+      var rs = qListRows(t);
+      if(rs.filter(function(r){ return r.amt; }).length >= 3){ blocks.push({ type:'dat', rows:rs }); return; }
+    }
+    var rows3 = qRows(t);
+    if(rows3 && rows3.length >= 3){ blocks.push({ type:'dat', rows:rows3 }); return; }
+
+    var inl = t.split(/(?=[（(]\d+[）)])/);
+    if(inl.length >= 2 && /^[（(]\d+[）)]/.test(inl[1])){
+      var lead = inl.shift().trim();
+      if(lead) blocks.push({ type:'p', txt:lead });
+      inl.forEach(function(x){ blocks.push({ type:'item', txt:x.trim() }); });
+      return;
+    }
+    var sParts = t.split('；').map(function(x){ return x.trim(); }).filter(Boolean);
+    if(sParts.length >= 3){
+      var dated = sParts.filter(function(x){ return /^(?:[×X]?\d+年)?\d+月\d+日|^(?:[×X]?\d+年)?\d+日|^\d+\/\d+/.test(x); }).length;
+      if(dated >= 2){
+        sParts.forEach(function(x, k){
+          blocks.push({ type:'p', txt:x });
+        });
+        return;
+      }
+    }
+    blocks.push({ type:'p', txt:t });
+  });
+
+  var html = '';
+  var i = 0;
+  while(i < blocks.length){
+    var b = blocks[i];
+    if(b.type === 'side'){
+      var grp = [];
+      var variant = b.label.replace(/(借方|貸方)$/,'');
+      while(i < blocks.length && blocks[i].type === 'side' && blocks[i].label.replace(/(借方|貸方)$/,'') === variant){
+        grp.push(blocks[i]); i++;
+      }
+      var tot = '';
+      if(i < blocks.length && blocks[i].type === 'tot'){ tot = blocks[i].txt; i++; }
+      var cols = grp.map(function(g){
+        var rr = qRows(g.txt) || qListRows(g.txt) || [{ lab:g.txt, amt:'' }];
+        var inner = '<div class="st-title">' + esc(g.label) + '</div>';
+        rr.forEach(function(r){
+          inner += '<div class="st-row"><span class="st-lab">' + esc(r.lab) + '</span><span class="st-amt">' + esc(r.amt) + '</span></div>';
+        });
+        if(tot) inner += '<div class="st-row total"><span class="st-lab">合計</span><span class="st-amt">' + esc(tot) + '</span></div>';
+        return '<div class="stmt">' + inner + '</div>';
+      }).join('');
+      html += '<div class="q-cols">' + cols + '</div>';
+      continue;
+    }
+    if(b.type === 'item'){
+      var items = '';
+      var prevNum = 0;
+      while(i < blocks.length && blocks[i].type === 'item'){
+        var it = blocks[i];
+        var m = it.txt.match(/^[（(](\d+)[）)]\s*(.*)$/);
+        var num = m ? parseInt(m[1], 10) : 0;
+        if(num && prevNum && num <= prevNum && items) html += '<div class="q-items">' + items + '</div>', items = '';
+        var label = m ? ('(' + m[1] + ')') : '';
+        var body = m ? m[2] : it.txt;
+        items += '<div class="q-item"><span class="q-num">' + esc(label) + '</span><span class="q-txt">' + qItemBody(body) + '</span></div>';
+        prevNum = num || prevNum;
+        i++;
+      }
+      html += '<div class="q-items">' + items + '</div>';
+      continue;
+    }
+    if(b.type === 'dat'){ html += qDatPanel(b.rows, ''); i++; continue; }
+    if(b.type === 'tot'){ html += '<div class="q-p"><b>合計 ' + esc(b.txt) + '</b></div>'; i++; continue; }
+    if(b.type === 'cap'){ html += '<div class="q-cap">' + esc(b.txt.replace(/[：:，,、]+$/, '')) + '</div>'; i++; continue; }
+    var pt = b.txt.replace(/[：:，,、]+$/, '');
+    if(!/[。？！?!]$/.test(pt)) pt += '。';
+    html += '<div class="q-p">' + esc(pt) + '</div>';
+    i++;
+  }
+  return '<div class="qbody">' + html + '</div>';
 }
 
 // ---------- 計算題解答排版 ----------
@@ -1026,7 +1298,8 @@ function renderStatement(text){
     if(r.kind==='raw') return `<div class="st-row raw"${ind}>${esc(r.label)}</div>`;
     return `<div class="st-row ${r.kind==='total'?'total':''}"${ind}><span class="st-lab">${esc(r.label)}</span><span class="st-amt">${esc(r.amt)}</span></div>`;
   }).join('');
-  return `<div class="stmt">${html}</div>`;
+  const hasAmt = rows.some(r=>r.amt || r.kind==='total');
+  return hasAmt ? `<div class="stmt">${html}</div>` : `<div class="calc-note">${html}</div>`;
 }
 
 function renderFormula(text){
@@ -1131,6 +1404,10 @@ function viewWrongbook(){
 }
 
 // ============ 詳解總覽 ============
+function sameText(a,b){
+  function n(t){ return String(t||'').replace(/[\s\u3000，,。、；;：:（）()「」『』$＄]/g,''); }
+  var x=n(a), y=n(b); return x && x===y;
+}
 function viewExplainer(){
   const f=S.expl;
   let list=QUESTIONS.filter(q=>q.type===f.type);
@@ -1172,10 +1449,10 @@ function viewExplainer(){
           ${isTF(q)?'<span class="badge type">是非</span>':''}
           ${isPending(q)?'<span class="badge src-待核对">待核對</span>':srcBadge(q)}
         </div>
-        <div class="q">${esc(q.text)}</div>
+        <div class="q">${renderQText(q)}</div>
         ${q.options&&Object.keys(q.options).length?`<div class="a"><b>選項：</b>\n${Object.entries(q.options).map(([k,v])=>esc(k)+'. '+esc(v)).join('\n')}</div>`:''}
-        <div class="a"><b>答案：</b>${isPending(q)?'<span style="color:var(--pend)">待核對</span>':esc(q.answer)}</div>
-        ${q.explanation?`<div class="e"><b>詳解：</b>\n${esc(q.explanation)}</div>`:''}
+        <div class="a"><b>答案：</b>${isPending(q)?'<span style="color:var(--pend)">待核對</span>':renderAnsText(q.answer)}</div>
+        ${q.explanation&&sameText(q.explanation,q.answer)?'':q.explanation?`<div class="e"><b>詳解：</b>${renderAnsText(q.explanation)}</div>`:''}
       </div>`).join(''):'<div class="empty">沒有符合條件的題目</div>'}
     ${pages>1?`<div class="pager">
       <button data-act="expPage" data-val="${f.page-1}" ${f.page<=1?'disabled':''}>上一頁</button>
