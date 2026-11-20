@@ -135,6 +135,15 @@ input[type=search]{width:100%;padding:10px 12px;border:1px solid var(--line);bor
 .qbody .stmt{padding:10px 13px;margin:6px 0}
 .qbody .stmt .st-row{padding:2px 0;font-size:15.5px}
 .qbody .stmt .st-amt{font-size:15px}
+.q-grid{overflow-x:auto;margin:10px 0 4px}
+.q-grid table{width:100%;border-collapse:collapse;font-size:.95em}
+.q-grid thead th{background:var(--teal-soft);color:var(--teal-deep);font-size:11.5px;font-weight:700;padding:7px 9px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--teal)}
+.q-grid thead th.gc{text-align:right}
+.q-grid td{padding:6px 9px;border-top:1px solid var(--line);vertical-align:middle}
+.q-grid td.gl{font-weight:600;color:var(--ink);white-space:nowrap}
+.q-grid td.gc{text-align:right;font-family:"SF Mono",Menlo,monospace;white-space:nowrap}
+.q-grid td.ph{text-align:center;color:var(--gold);font-weight:700;font-family:"SF Mono",Menlo,monospace}
+.q-grid tr.total td{border-top:2px solid var(--teal);font-weight:700}
 .q-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0}
 .q-item{display:flex;gap:9px;margin:7px 0}
 .q-item .q-num{flex:0 0 auto;color:var(--teal-deep);font-weight:700;font-family:"SF Mono",Menlo,monospace;font-size:.92em;min-width:2.1em}
@@ -260,6 +269,8 @@ body.dark .btn-primary,body.dark .mode-card .go,body.dark .flip-btn,body.dark .r
 .st-row.st-section{font-weight:700;color:var(--teal-deep);margin-top:5px}
 .calc-note{background:var(--paper-2);border-radius:8px;padding:9px 12px;margin:8px 0;font-size:.92em;color:var(--ink-soft)}
 .calc-note .st-row.st-section{font-weight:600;color:var(--ink-soft);margin:0}
+.gfill-cap{font-size:12px;font-weight:700;color:var(--teal-deep);letter-spacing:.03em;margin:6px 0 -4px}
+.q-grid td.gc.neg{color:var(--bad)}
 .st-row.total{border-top:1px solid var(--line);margin-top:5px;padding-top:6px;font-weight:700}
 .st-row.total .st-amt{color:var(--teal-deep)}
 .fx{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
@@ -965,8 +976,62 @@ function renderAnsText(t){
   return '<div class="qbody">' + html + '</div>';
 }
 
+function noteGridOf(raw){
+  var m = String(raw).match(/[（(]表格[：:]/);
+  if(!m) return null;
+  var start = m.index, depth = 0, end = -1;
+  for(var i = start; i < raw.length; i++){
+    var c = raw.charAt(i);
+    if(c === '（' || c === '(') depth++;
+    else if(c === '）' || c === ')'){
+      depth--;
+      if(depth === 0){ end = i; break; }
+    }
+  }
+  if(end < 0) return null;
+  var inner = raw.slice(start + 1, end).replace(/^表格[：:]/, '');
+  var rows = inner.split('；').map(function(x){ return x.trim(); }).filter(Boolean);
+  if(rows.length < 2) return null;
+  var out = [];
+  rows.forEach(function(row){
+    var re = /[×X]\s?\d+\s?年?/g, pos = [], hit;
+    while((hit = re.exec(row)) !== null) pos.push({ at:hit.index, len:hit[0].length, lab:hit[0].replace(/\s/g,'') });
+    var label = (pos.length ? row.slice(0, pos[0].at) : row).trim();
+    var cells = [];
+    pos.forEach(function(pt, k){
+      var nextAt = k + 1 < pos.length ? pos[k + 1].at : row.length;
+      var val = row.slice(pt.at + pt.len, nextAt).replace(/、$/,'').trim();
+      var ph = val.match(/^[（(](\d+)[）)]$/);
+      cells.push({ per:pt.lab, ph: ph ? ph[1] : '', amt: ph ? '' : val.replace(/^[\$＄]?/,'$') });
+    });
+    out.push({ label:label, cells:cells });
+  });
+  return { rows: out, cols: out[0].cells.map(function(c){ return c.per; }), raw: raw.slice(start, end + 1) };
+}
+function gridHtml(g, filled, fillMap){
+  var head = '<tr><th>項目</th>' + g.cols.map(function(c){ return '<th class="gc">' + esc(c) + '</th>'; }).join('') + '</tr>';
+  var body = g.rows.map(function(r){
+    var tds = '<td class="gl">' + esc(r.label) + '</td>';
+    g.cols.forEach(function(col, i){
+      var cell = r.cells[i] || { amt:'', ph:'' };
+      if(filled && fillMap && cell.ph){
+        var v = fillMap[cell.ph];
+        tds += '<td class="gc' + (v && v.indexOf('(') === 0 ? ' neg' : '') + '">' + esc(v || cell.ph) + '</td>';
+      } else if(cell.ph){
+        tds += '<td class="ph">(' + esc(cell.ph) + ')</td>';
+      } else {
+        tds += '<td class="gc">' + esc(cell.amt) + '</td>';
+      }
+    });
+    return '<tr>' + tds + '</tr>';
+  }).join('');
+  return '<div class="q-grid"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
+}
+
 function renderQText(q){
   var raw = String((q && q.text) || '').replace(/\r/g,'').replace(/^\s*\d+\.\s*/,'').trim();
+  var grid = noteGridOf(raw);
+  if(grid) raw = raw.replace(grid.raw, '').trim();
   var blocks = [];
 
   qSegs(raw).forEach(function(seg){
@@ -1105,6 +1170,7 @@ function renderQText(q){
     html += '<div class="q-p">' + esc(pt) + '</div>';
     i++;
   }
+  if(grid) html += gridHtml(grid, false, null);
   return '<div class="qbody">' + html + '</div>';
 }
 
@@ -1305,7 +1371,7 @@ function renderStatement(text){
 function renderFormula(text){
   const lines = text.replace(/\r/g,'').split(/\n|；|。/).map(s=>s.trim().replace(/[。；]$/,'')).filter(Boolean);
   const body = lines.map(l=>{
-    const isAns = /^(答案|淨利|銷貨|收現|營業週期|合計)/.test(l);
+    const isAns = /^(答案|合計|總計|營業週期)/.test(l);
     const t = esc(l).replace(/[＝=]/g, ' <b class="eq">＝</b> ');
     return `<div class="fx-l${isAns?' ans':''}">${t}</div>`;
   }).join('');
@@ -1367,6 +1433,20 @@ function renderCalcAnswer(q, pageNo){
       }
     });
     html += blocks.map(b=>renderBlock(b.type, b.txt)).join('');
+  }
+  const g = noteGridOf(q.text || '');
+  if(g){
+    const map = {};
+    (q.answer || '').replace(/[（(](\d+)[）)]\s*[\$＄]?[（(]?([\d,]+)/g, function(_, a, b){ map[a] = '$' + b; });
+    if(Object.keys(map).length){
+      let rest = (q.answer || '').trim();
+      for(let k = 0; k < 8; k++){
+        const nx = rest.replace(/^[（(]\d+[）)]\s*[\$＄]?[（(]?[\d,]+(?:[)）])?\s*[　 ]*/, '').trim();
+        if(nx === rest) break;
+        rest = nx;
+      }
+      html = '<div class="gfill-cap">填入答案後（解答本）</div>' + gridHtml(g, true, map) + (rest ? renderFormula(rest.replace(/；/g,'\n').replace(/。\s*/g,'\n')) : '');
+    }
   }
   html += `<a class="pdf-link" href="會計學_計算題解答圖表.pdf" target="_blank" rel="noopener">開啟 PDF 解答（第 ${pageNo} 頁）</a>`;
   return html;
