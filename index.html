@@ -210,6 +210,51 @@ input[type=search]{width:100%;padding:10px 12px;border:1px solid var(--line);bor
   font-weight:600;box-shadow:0 6px 16px rgba(0,0,0,.2);display:none}
 .fab.show{display:block}
 body.dark .btn-primary,body.dark .mode-card .go,body.dark .flip-btn,body.dark .resume button{color:#0b1512}
+
+/* ---------- 解答排版 ---------- */
+.ans-bar{display:flex;align-items:center;gap:8px;margin-top:12px;padding:7px 10px;background:var(--paper-2);border-radius:9px}
+.ans-bar .t{font-weight:700;color:var(--teal-deep);font-size:13px}
+.ans-bar .grow{flex:1}
+.ans-bar button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:4px 10px;font-size:12px}
+.ans-bar button:hover{border-color:var(--teal);color:var(--teal)}
+.ans{margin-top:10px;font-size:14px;line-height:1.75}
+.ans.fs-s{font-size:12.5px}
+.ans.fs-m{font-size:14px}
+.ans.fs-l{font-size:16px}
+.jr{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.jr table{width:100%;border-collapse:collapse;font-size:.95em}
+.jr thead th{background:var(--teal-soft);color:var(--teal-deep);font-size:11.5px;font-weight:700;padding:6px 8px;text-align:left;white-space:nowrap}
+.jr thead th.num{text-align:right}
+.jr td{padding:5px 8px;border-top:1px solid var(--line);vertical-align:top}
+.jr td.date{color:var(--teal-deep);font-weight:600;white-space:nowrap;border-right:1px solid var(--line);width:1%;font-size:.9em}
+.jr td.date .no{display:block;font-weight:400;color:var(--ink-soft);font-size:.85em}
+.jr td.item{width:42%}
+.jr td.item.cr{padding-left:22px;color:var(--ink-soft)}
+.jr td.item.cr::before{content:"貸";font-size:10px;color:var(--ink-soft);border:1px solid var(--line);border-radius:3px;padding:0 3px;margin-right:6px;vertical-align:1px}
+.jr td.item:not(.cr)::before{content:"借";font-size:10px;color:var(--teal-deep);border:1px solid var(--line);border-radius:3px;padding:0 3px;margin-right:6px;vertical-align:1px}
+.jr td.num{text-align:right;font-family:"SF Mono",Menlo,monospace;white-space:nowrap;width:23%}
+.jr tr.grp td{border-top:2px solid var(--line)}
+.jr tr.note td{background:var(--paper-2);color:var(--ink-soft);font-size:.86em;border-top:1px dashed var(--line)}
+.jr-notes{margin-top:8px;padding:9px 12px;background:var(--paper-2);border-radius:8px;font-size:.88em;color:var(--ink-soft)}
+.jr-notes div{margin:2px 0}
+.stmt{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--card)}
+.st-title{text-align:center;font-weight:700;color:var(--teal-deep);padding:2px 0 8px;border-bottom:2px solid var(--teal);margin-bottom:8px;font-size:.98em}
+.st-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:3px 0}
+.st-row .st-lab{min-width:0;word-break:break-word}
+.st-row .st-amt{font-family:"SF Mono",Menlo,monospace;white-space:nowrap;color:var(--ink)}
+.st-row.st-section{font-weight:700;color:var(--teal-deep);margin-top:5px}
+.st-row.total{border-top:1px solid var(--line);margin-top:5px;padding-top:6px;font-weight:700}
+.st-row.total .st-amt{color:var(--teal-deep)}
+.fx{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+.fx-l{font-family:"SF Mono",Menlo,monospace;padding:3px 0;line-height:1.85;word-break:break-word}
+.fx-l .eq{color:var(--gold)}
+.fx-l.ans{background:var(--gold-soft);border-radius:6px;padding:3px 6px;margin-top:4px;font-weight:700}
+.st-row.raw{display:block;font-family:"SF Mono",Menlo,monospace;font-size:.9em;color:var(--ink-soft);white-space:pre-wrap;padding:3px 0}
+.ans-note{margin:10px 0;padding:9px 12px;background:var(--paper-2);border-left:3px solid var(--gold);border-radius:6px;color:var(--ink-soft);font-size:.92em;line-height:1.75}
+.pl-list{margin:0;padding-left:1.25em}
+.pl-list li{margin:5px 0;line-height:1.8}
+.pl-text{white-space:pre-wrap;line-height:1.85}
+
 *:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @media (max-width:640px){
   .stats{grid-template-columns:repeat(2,1fr)}
@@ -245,7 +290,7 @@ const CH = ["全部", "第一章", "第二章", "第三章", "第四章", "第�
 const CHS = ["第一章", "第二章", "第三章", "第四章", "第五章", "第六章"];
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
-function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s){ return String(s==null?'':s).replace(/×(?=\d+年)/g,'X').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function shuffle(a){ const x=a.slice(); for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
 function isTF(q){ const k=Object.keys(q.options||{}); return k.length===2 && (k.includes('○')||k.includes('×')); }
 function isPending(q){ return q.answer_source==='待核对' || q.answer==='[待核对]'; }
@@ -265,7 +310,7 @@ const K = 'acc_';
 function lsGet(k, d){ try{ const v=localStorage.getItem(K+k); return v?JSON.parse(v):d; }catch(e){ return d; } }
 function lsSet(k, v){ try{ localStorage.setItem(K+k, JSON.stringify(v)); }catch(e){} }
 function lsDel(k){ try{ localStorage.removeItem(K+k); }catch(e){} }
-const settings = () => Object.assign({ shuffleOpt:true, sound:true, dark:false }, lsGet('settings', {}));
+const settings = () => Object.assign({ shuffleOpt:true, sound:true, dark:false, calcFont:'m' }, lsGet('settings', {}));
 function saveSetting(k,v){ const s=settings(); s[k]=v; lsSet('settings', s); }
 const statsAll = () => lsGet('stats', {});
 function markSeen(no, ok){
@@ -724,6 +769,25 @@ function viewCalcSetup(){
   </div>`;
 }
 
+function doDraw(){
+  if(!S.calc) S.calc={ current:null, count:0, chapter:'全部', recent:[], flipped:false };
+  const ch = S.calc.chapter || '全部';
+  let pool = QUESTIONS.filter(q=>q.type==='計算' && !isPending(q) && (ch==='全部' || q.chapter===ch));
+  if(!pool.length) pool = QUESTIONS.filter(q=>q.type==='計算' && !isPending(q));
+  const seen = S.calc.recent || [];
+  let cand = pool.filter(q=>seen.indexOf(q.no)<0);
+  if(!cand.length){ cand = pool; S.calc.recent = []; }
+  const pick = cand[Math.floor(Math.random()*cand.length)];
+  if(!pick){ toast('這個範圍目前沒有可抽的計算題'); return; }
+  S.calc.current = pick.no;
+  S.calc.count = (S.calc.count||0) + 1;
+  S.calc.recent = [pick.no].concat(S.calc.recent||[]).slice(0,12);
+  S.calc.flipped = false;
+  addDraw(pick.chapter);
+  S.view = 'calc-play';
+  render();
+}
+
 function viewCalcPlay(){
   const c=S.calc; const q=byNo(c.current);
   const pend=isPending(q);
@@ -748,7 +812,10 @@ function viewCalcPlay(){
       ? `<div class="pend-note">待核對：解答本未拍到本題解答。</div>`
       : (c.flipped ? '' : `<button class="flip-btn" data-act="flip">翻到背面看解答（空白鍵）</button>`)}
     <div class="flip-face ${c.flipped||pend?'show':''}">
-      ${pend?'':renderCalcAnswer(q, pageNo)}
+      ${pend?'':`<div class="ans-bar"><span class="t">解答</span><span class="grow"></span>
+        <button data-act="font">字級：${fontLabel()}</button>
+        <button data-act="copyAns">複製解答</button></div>
+        <div class="ans fs-${settings().calcFont}">${renderCalcAnswer(q, pageNo)}</div>`}
       ${pend?'':`<div class="rating">
         <div class="rlab">這題你掌握到幾分？（1～5）</div>
         <div class="rstars">${[1,2,3,4,5].map(n=>`<button class="rstar ${rated&&rated>=n?'on':''}" data-act="star" data-n="${n}">${n}</button>`).join('')}</div>
@@ -769,71 +836,268 @@ function calcPage(q){
   return 1;
 }
 
-function renderCalcAnswer(q, pageNo){
-  const parsed = parseReport(q.answer||'');
-  let html='';
-  if(q.no==='4-計1') html += '<div class="pend-note" style="margin-bottom:10px">部分待核對：結帳分錄已拍到解答本，但「結帳後試算表」部分未拍到。</div>';
-  if(parsed){
-    html += '<div class="rpt">';
-    if(parsed.title) html += `<div class="rpt-head">${esc(parsed.title)}</div>`;
-    parsed.rows.forEach(r=>{ html += `<div class="rpt-row ${r.total?'total':''}"><span>${esc(r.label)}</span><span class="amt ${r.neg?'neg':''}">${esc(r.amount)}</span></div>`; });
-    if(parsed.note) html += `<div class="rpt-note">${esc(parsed.note)}</div>`;
-    html += '</div>';
+// ---------- 計算題解答排版 ----------
+function fontLabel(){ const f=settings().calcFont||'m'; return f==='s'?'小':(f==='l'?'大':'中'); }
+
+function ansMode(t){
+  const fw = (t.match(/／/g)||[]).length;
+  const aw = (t.match(/[^0-9]\s?\/\s?[^0-9]/g)||[]).length;
+  const jl = /借/.test(t) && /貸/.test(t);
+  const money = /[\d,]{4,}/.test(t);
+  if(fw>=1 && jl) return 'journal';
+  if(fw>=2) return 'journal';
+  if(aw>=2 && money && !/[＝=]\s/.test(t)) return 'journal';
+  if(/(損益表|資產負債表|權益變動表|試算表|調節表|進貨成本|銷貨成本)/.test(t) && !/([＝=].*){2}/.test(t)) return 'statement';
+  if((t.match(/[＝=]/g)||[]).length>=2 || /÷|×/.test(t)) return 'formula';
+  return 'plain';
+}
+
+function splitTop(s, isSep){
+  const out=[]; let depth=0, buf='';
+  for(let i=0;i<s.length;i++){
+    const ch=s.charAt(i);
+    if(ch==='（'||ch==='(') depth++;
+    else if((ch==='）'||ch===')') && depth>0) depth--;
+    if(depth===0 && isSep(s,i)){ out.push(buf); buf=''; continue; }
+    buf += ch;
+  }
+  out.push(buf);
+  return out.map(x=>x.trim()).filter(Boolean);
+}
+function splitSide(s){
+  return splitTop(s, (str,i)=>{
+    if(str.charAt(i)==='／') return true;
+    if(str.charAt(i)==='/' && str.charAt(i-1)===undefined) return false;
+    if(str.charAt(i)==='/'){
+      const prev=str.charAt(i-1), next=str.charAt(i+1);
+      return !(/\d/.test(prev) && /\d/.test(next));
+    }
+    if((str.charAt(i)==='；'||str.charAt(i)===';') && /^\s*[貸借]/.test(str.slice(i+1))) return true;
+    return false;
+  });
+}
+
+function parseItem(s){
+  let t = s.trim().replace(/^、|^，/,'').replace(/[。；]$/,'');
+  let note='';
+  const nm = t.match(/（([^）]*)）|\(([^)]*)\)/);
+  if(nm && !/^[\d,]+$/.test((nm[1]||nm[2]||'').trim())){
+    note = ((nm[1]||nm[2])||'').trim();
+    t = t.replace(nm[0],'');
+  }
+  let amt='', name=t;
+  const am = t.match(/([\d,]+(?:\.[\d]+)?)(?:\s*天)?$/);
+  if(am){ amt = am[1]; name = t.slice(0, am.index); }
+  name = name.replace(/[\$＄]/g,'').replace(/^借[：:]?/,'').replace(/^貸[：:]?/,'')
+              .replace(/[：:]$/,'').replace(/^[\s、，]+/,'').trim();
+  return { name, amt, note };
+}
+
+function parseTx(s, lastDate){
+  let rest = s.trim();
+  let date='', num='', head='';
+  const dm = rest.match(/^((?:\d{1,2}\/\d{1,2})|(?:\d{1,2}月\d{1,2}日))\s*/);
+  if(dm){ date = dm[1]; rest = rest.slice(dm[0].length); }
+  const nm = rest.match(/^(\(\s?\d+\s?\)|[①-⑩])\s*/);
+  if(nm){ num = nm[1].replace(/\s/g,''); rest = rest.slice(nm[0].length); }
+  rest = rest.replace(/^[①-⑩]\s*/,'');
+  const idxMark = rest.search(/借/g);
+  if(idxMark>0){
+    head = rest.slice(0, idxMark).replace(/[：:]$/,'').trim();
+    rest = rest.slice(idxMark);
+    const hd = head.match(/(\d{1,2}\/\d{1,2})|(\d{1,2}月\d{1,2}日)/);
+    if(hd && !date){ date = hd[1] || hd[2]; head = head.replace(hd[0],'').replace(/[：:，,\s]+$/,'').trim(); }
+  }
+  if(!date && lastDate) date = lastDate;
+  const sides = splitSide(rest);
+  if(sides.length<2) return null;
+  const groups=[]; let cur=null;
+  if(!sides.some(sd=>/^[借貸]/.test(sd))){
+    const dr = sides[0].split('、').map(parseItem).filter(x=>x.name);
+    const cr = sides.slice(1).join('／').split('、').map(parseItem).filter(x=>x.name);
+    if(!dr.length && !cr.length) return null;
+    const note = (dr.concat(cr).map(x=>x.note).filter(Boolean).join('；')) || head;
+    return [{ date, num, head, dr, cr, note }];
+  }
+  sides.forEach(sd=>{
+    const isDr = /^借/.test(sd), isCr = /^貸/.test(sd);
+    if(!cur || (isDr && cur.hasCr)){ cur={dr:[],cr:[],hasCr:false}; groups.push(cur); }
+    const items = sd.replace(/^[借貸][：:]?\s*/,'').split('、').map(parseItem).filter(x=>x.name);
+    if(isCr){ cur.cr.push(...items); cur.hasCr=true; } else { cur.dr.push(...items); }
+  });
+  const out = groups.filter(g=>g.dr.length||g.cr.length).map(g=>{
+    const note = (g.dr.concat(g.cr).map(x=>x.note).filter(Boolean).join('；')) || head;
+    return { date, num, head, dr:g.dr, cr:g.cr, note };
+  });
+  return out.length? out : null;
+}
+
+function renderJournal(text){
+  const segs = splitTop(text.replace(/\r/g,'').replace(/(貸[^／\/\n]{1,60}?)[／\/](?=\s*借)/g,'$1。'), (str,i)=>{
+    const ch=str.charAt(i);
+    if(ch==='。'||ch==='\n') return true;
+    if(ch==='；' && !/^\s*[貸借]/.test(str.slice(i+1))) return true;
+    return false;
+  }).map(s=>s.trim().replace(/^[；。]/,'')).filter(Boolean);
+  const txs=[], notes=[]; let lastDate='';
+  const isTx = s => (/借/.test(s) && /貸/.test(s) && /[\d,]{2,}/.test(s)) ||  /／/.test(s) || /\s\/\s/.test(s) || /[^0-9]\s?\/\s?[^0-9]/.test(s);
+  segs.forEach(seg=>{
+    seg.split(/。/).forEach(raw=>{
+      raw.split(/\s+\/\s*(?=[借])/).forEach(p=>{
+      p = p.trim(); if(!p) return;
+      if(!isTx(p)){ notes.push(p); return; }
+      const list = parseTx(p, lastDate);
+      if(list){ if(list[0].date) lastDate = list[0].date; list.forEach(tx=>txs.push(tx)); }
+      else notes.push(p);
+      });
+    });
+  });
+  if(!txs.length) return renderPlain(text);
+  let rows='';
+  txs.forEach((tx,ti)=>{
+    const n = Math.max(tx.dr.length,1) + tx.cr.length;
+    const first = ti===0;
+    let r='';
+    tx.dr.forEach((it,i)=>{
+      r += `<tr class="${i===0?'grp':''}">`
+        + (i===0?`<td class="date" rowspan="${n}">${esc(tx.date||tx.num||'')}${tx.date&&tx.num?`<span class="no">${esc(tx.num)}</span>`:''}</td>`:'')
+        + `<td class="item">${esc(it.name)}</td><td class="num">${esc(it.amt)}</td><td class="num cr"></td></tr>`;
+    });
+    if(!tx.dr.length){
+      r += `<tr class="grp"><td class="date" rowspan="${n}">${esc(tx.date||tx.num||'')}</td><td class="item" colspan="3"></td></tr>`;
+    }
+    tx.cr.forEach((it,i)=>{
+      r += `<tr><td class="item cr">${esc(it.name)}</td><td class="num"></td><td class="num cr">${esc(it.amt)}</td></tr>`;
+    });
+    if(tx.note) r += `<tr class="note"><td colspan="4">${esc(tx.note)}</td></tr>`;
+    rows += r;
+  });
+  let html = `<div class="jr"><table><thead><tr><th class="dh">日期</th><th>會計項目</th><th class="num">借方</th><th class="num">貸方</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  if(notes.length) html += `<div class="jr-notes">${notes.map(n=>`<div>${esc(n)}</div>`).join('')}</div>`;
+  return html;
+}
+
+function mkStmtRow(s, indent){
+  s = s.trim();
+  const am = s.match(/([\$＄])?(\([\d,]+\)|[\d,]+)(\s*天)?$/);
+  let label = s, amt = '';
+  if(am){ label = s.slice(0, am.index).trim(); amt = (am[2].startsWith('(') ? '' : (am[1]||'')) + am[2] + (am[3]||''); }
+  let kind = 'row';
+  if(!amt) kind = (/[：:]$/.test(s) || /^(借方|貸方)/.test(s)) ? 'section' : 'text';
+  else if(/合計|總[額計]|淨[額利損]|餘額|平衡|小計|成本$/.test(label)) kind = 'total';
+  return { indent, label, amt, kind };
+}
+
+function stmtRows(line){
+  const indent = (line.match(/^ +/)||[''])[0].length;
+  let s = line.trim().replace(/[。；]$/,'');
+  const out = [];
+  const tm = s.match(/^(.{2,44}?(?:表|損益表|資產負債表|權益變動表|試算表|調節表|平衡表)[^。；：]{0,24})：([\s\S]+)$/);
+  if(tm){ out.push({indent, label:tm[1], amt:'', kind:'title'}); s = tm[2].trim(); }
+  const moneyRuns = (s.match(/[\d][\d,]{2,}|[\(（][\d,]+[）\)]/g)||[]).length;
+  if((s.match(/[\/／]/g)||[]).length>=1 && moneyRuns>=2){ out.push({indent, label:s, amt:'', kind:'raw'}); return out; }
+  const parts = s.split('、').map(x=>x.trim()).filter(Boolean);
+  const withAmt = parts.filter(p=>/([\$＄])?(\([\d,]+\)|[\d,]+)(\s*天)?$/.test(p)).length;
+  if(parts.length>=2 && withAmt>=2){
+    parts.forEach((p,i)=> out.push(mkStmtRow(p, indent + (i?1:0))));
+  } else if(parts.length===1 && withAmt===1 && /[：:]/.test(parts[0])){
+    const seg = parts[0].split(/[：:]/);
+    if(seg.length===2){
+      out.push({indent, label:seg[0], amt:'', kind:'section'});
+      out.push(mkStmtRow(seg[1], indent+1));
+    } else out.push(mkStmtRow(parts[0], indent));
   } else {
-    html += `<div class="explain" style="max-height:420px">${esc(q.answer||'')}</div>`;
+    out.push(mkStmtRow(s, indent));
+  }
+  return out;
+}
+
+function renderStatement(text){
+  let raw = text.replace(/\r/g,'').replace(/　/g,'  ');
+  let lines = raw.split(/\n|；|。/).map(l=>l.trim().replace(/[。；]$/,'')).filter(Boolean);
+  let rows = [];
+  lines.forEach(l=>{ rows = rows.concat(stmtRows(l)); });
+  if(!rows.length) return renderPlain(text);
+  const html = rows.map(r=>{
+    const ind = r.indent ? ` style="padding-left:calc(${r.indent} * .85em)"` : '';
+    if(r.kind==='title') return `<div class="st-title">${esc(r.label)}</div>`;
+    if(r.kind==='text')  return `<div class="st-row st-section"${ind}>${esc(r.label)}</div>`;
+    if(r.kind==='section') return `<div class="st-row st-section"${ind}>${esc(r.label)}</div>`;
+    if(r.kind==='raw') return `<div class="st-row raw"${ind}>${esc(r.label)}</div>`;
+    return `<div class="st-row ${r.kind==='total'?'total':''}"${ind}><span class="st-lab">${esc(r.label)}</span><span class="st-amt">${esc(r.amt)}</span></div>`;
+  }).join('');
+  return `<div class="stmt">${html}</div>`;
+}
+
+function renderFormula(text){
+  const lines = text.replace(/\r/g,'').split(/\n|；|。/).map(s=>s.trim().replace(/[。；]$/,'')).filter(Boolean);
+  const body = lines.map(l=>{
+    const isAns = /^(答案|淨利|銷貨|收現|營業週期|合計)/.test(l);
+    const t = esc(l).replace(/[＝=]/g, ' <b class="eq">＝</b> ');
+    return `<div class="fx-l${isAns?' ans':''}">${t}</div>`;
+  }).join('');
+  return `<div class="fx">${body}</div>`;
+}
+
+function renderPlain(text){
+  const t = text.replace(/\r/g,'').trim()
+    .replace(/[；;、]\s*\n?\s*(?=[（(]\d+[）)])/g,'\n')
+    .replace(/[。]\s*(?=[（(]\d+[）)])/g,'\n')
+    .replace(/\s+(?=[（(]\d+[）)])/g,'\n');
+  const parts = t.split(/\n/).map(s=>s.trim().replace(/^[；;、。,]+/,'').replace(/[；;、,]$/,'')).filter(Boolean);
+  if(parts.length>=2){
+    return `<ul class="pl-list">${parts.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`;
+  }
+  return `<div class="pl-text">${esc(t)}</div>`;
+}
+
+function looksJ(c){
+  if(/[借貸]方/.test(c) || /[+＋]/g.test(c)) return false;
+  if(/借/.test(c) && /貸/.test(c)) return true;
+  if(!/[表調節]/.test(c) && /／|\s\/\s/.test(c)){
+    const lines = c.split(/；|\n/).map(x=>x.trim()).filter(Boolean);
+    return lines.length>0 && lines.every(l=>(l.match(/(?<![\d])\/(?![\d])|／/g)||[]).length===1 && /[\d,]{3,}/.test(l));
+  }
+  return false;
+}
+
+function renderBlock(type, txt){
+  if(type==='j') return renderJournal(txt);
+  if(type==='f') return renderFormula(txt);
+  if(type==='s') return renderStatement(txt);
+  return `<div class="ans-note">${esc(txt)}</div>`;
+}
+
+function renderCalcAnswer(q, pageNo){
+  const t = (q.answer||'').trim();
+  const mode = ansMode(t);
+  let html = '';
+  if(q.no==='4-計1') html += '<div class="pend-note" style="margin-bottom:10px">部分待核對：結帳分錄已拍到解答本，但「結帳後試算表」部分未拍到。</div>';
+  if(mode==='formula') html += renderFormula(t);
+  else if(mode==='plain') html += renderPlain(t);
+  else {
+    const chunks = t.split(/。|\n/).map(x=>x.trim().replace(/[；;]$/,'')).filter(Boolean);
+    const blocks = [];
+    chunks.forEach(c=>{
+      const isJ = looksJ(c);
+      if(isJ){
+        const last = blocks[blocks.length-1];
+        if(last && last.type==='j') last.txt += '。' + c; else blocks.push({type:'j', txt:c});
+      } else if(/^(核對|註|說明|備註|定期|永續|分批|移動平均|先進先出)/.test(c) || (/[＝=]/.test(c) && !/[\d,]{4,}/.test(c)) || (/[＝=÷×]/.test(c) && !/[借貸]/.test(c))){
+        blocks.push({type:'n', txt:c});
+      } else if(/[＝=÷×]/.test(c) && !/[借貸]/.test(c)){
+        const last = blocks[blocks.length-1];
+        if(last && last.type==='f') last.txt += '；' + c; else blocks.push({type:'f', txt:c});
+      } else {
+        const last = blocks[blocks.length-1];
+        if(last && last.type==='s') last.txt += '；' + c; else blocks.push({type:'s', txt:c});
+      }
+    });
+    html += blocks.map(b=>renderBlock(b.type, b.txt)).join('');
   }
   html += `<a class="pdf-link" href="會計學_計算題解答圖表.pdf" target="_blank" rel="noopener">開啟 PDF 解答（第 ${pageNo} 頁）</a>`;
   return html;
 }
-
-function parseReport(text){
-  if(!text) return null;
-  let title='';
-  const tm = text.match(/^([^\n。；;：:]{4,40}?(公司|商店|行|號|企業)[^\n。；;：:]{0,30}?(表|損益|資產負債|權益變動|試算)[^\n。；;：:]{0,30})/);
-  if(tm) title=tm[1];
-  const segs = text.split(/[；;。\n]/).map(s=>s.trim()).filter(Boolean);
-  const rows=[]; let note='';
-  segs.forEach(seg=>{
-    const m = seg.match(/^(.{2,40}?)[：:]?\s*[\$￥]?\s*\(?([\d,]+)\)?\s*$/);
-    if(m){
-      const label=m[1].replace(/[—–\-]$/,'').trim();
-      const amt=m[2];
-      const neg = seg.includes('(') || seg.includes('( ');
-      const total = /合計|淨利|淨損|總額|本期/.test(seg);
-      rows.push({ label, amount:(neg?'(':'')+'$'+amt+(neg?')':''), neg, total });
-    } else if(seg.length>4 && rows.length<1){
-      if(/^(收益|營業費用|費用|資產|負債|權益|期初|期末|本期|借方|貸方|現金|非營業)/.test(seg)) rows.push({ label:seg, amount:'', total:false });
-    } else if(seg.length>2){ note += (note?'\n':'')+seg; }
-  });
-  if(rows.length<2) return null;
-  return { title, rows, note };
-}
-
-function doDraw(){
-  const chFilter=S.calc.chapter||'全部';
-  const recent=S.calc.recent||[];
-  const weightOf = ch => { const a=chapterAvg(ch); return a==null?1.0:Math.max(0.1, 1-a/5); };
-  let pool=[];
-  if(chFilter!=='全部'){
-    pool = QUESTIONS.filter(q=>q.type==='計算'&&q.chapter===chFilter&&!isPending(q));
-  } else {
-    const w={}; CHS.forEach(ch=>w[ch]=weightOf(ch));
-    const tot=CHS.reduce((s,c)=>s+w[c],0);
-    let r=Math.random()*tot, picked=CHS[0];
-    for(const c of CHS){ r-=w[c]; if(r<=0){ picked=c; break; } }
-    pool = QUESTIONS.filter(q=>q.type==='計算'&&q.chapter===picked&&!isPending(q));
-  }
-  if(!pool.length) pool = QUESTIONS.filter(q=>q.type==='計算'&&!isPending(q));
-  let cand = pool.filter(q=>!recent.includes(q.no));
-  if(!cand.length) cand = pool;
-  const q = cand[Math.floor(Math.random()*cand.length)];
-  S.calc.current=q.no; S.calc.count++; S.calc.flipped=false;
-  S.calc.recent = [q.no, ...(S.calc.recent||[])].slice(0,12);
-  addDraw(q.chapter); markSeen(q.no, null);
-  S.view='calc-play';
-  render();
-}
-
 // ============ 錯題本 ============
 function viewWrongbook(){
   const list=wrongBook().map(byNo).filter(Boolean);
@@ -1059,6 +1323,17 @@ document.getElementById('app').addEventListener('click', e=>{
       S.study.idx++;
       if(S.study.idx>=S.study.nos.length){ S.view='home'; S.study=null; toast('翻卡完成'); render(); return; }
       S.study.flipped=false; render(); return;
+    }
+    case 'font': {
+      const cur = settings().calcFont || 'm';
+      const next = cur==='s' ? 'm' : (cur==='m' ? 'l' : 's');
+      saveSetting('calcFont', next); render(); return;
+    }
+    case 'copyAns': {
+      const q = byNo(S.calc.current);
+      const txt = (q.chapter+' '+q.no+'\n'+q.text+'\n\n【解答】\n'+(q.answer||''));
+      navigator.clipboard?.writeText(txt).then(()=>toast('已複製題目與解答'),()=>toast('複製失敗'));
+      return;
     }
     case 'draw': {
       if(!S.calc) S.calc={ current:null, count:0, chapter:'全部', recent:[], flipped:false };
