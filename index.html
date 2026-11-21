@@ -879,11 +879,18 @@ function calcPage(q){
 }
 
 // ---------- 題目排版 ----------
+function qMoney(a){
+  if(!a) return a;
+  if(/^[$＄]/.test(a) || /^[(（]/.test(a)) return a;
+  if(/^[\d][\d,]*(?:\.\d+)?$/.test(a) && a.replace(/[^\d]/g,'').length >= 4) return '$' + a;
+  return a;
+}
+
 function qAmt(str){
   var t = String(str).trim().replace(/[，,。]$/,'');
   var am = t.match(/([$＄])?\s*((?:[(（][\d,]+[)）])|[\d][\d,]*(?:\.[\d]+)?)\s*$/);
   if(am && /\d/.test(am[2]) && t.slice(0, am.index).trim()){
-    return { lab: t.slice(0, am.index).trim().replace(/[：:]$/,''), amt: (am[1]||'') + am[2] };
+    return { lab: t.slice(0, am.index).trim().replace(/[：:]$/,''), amt: qMoney((am[1]||'') + am[2]) };
   }
   return { lab: t, amt: '' };
 }
@@ -916,7 +923,7 @@ function qItemBody(body){
 function qDatPanel(rows, total){
   var inner = '';
   rows.forEach(function(r){
-    inner += '<div class="st-row"><span class="st-lab">' + esc(r.lab) + '</span><span class="st-amt">' + esc(r.amt) + '</span></div>';
+    inner += '<div class="st-row"><span class="st-lab">' + esc(r.lab) + '</span><span class="st-amt">' + esc(qMoney(r.amt)) + '</span></div>';
   });
   if(total) inner += '<div class="st-row total"><span class="st-lab">合計</span><span class="st-amt">' + esc(total) + '</span></div>';
   return '<div class="stmt">' + inner + '</div>';
@@ -1008,6 +1015,36 @@ function noteGridOf(raw){
   });
   return { rows: out, cols: out[0].cells.map(function(c){ return c.per; }), raw: raw.slice(start, end + 1) };
 }
+function adjPairs(str){
+  var out = [];
+  String(str).split(/[、，]/).map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(seg){
+    var r = qAmt(seg.replace(/(?:為|是|有)\s*$/,''));
+    if(r.lab && r.amt) out.push({ lab: r.lab.replace(/(?:為|是|有)\s*$/,''), amt: r.amt });
+  });
+  return out;
+}
+function adjustGrid(raw){
+  var src = String(raw);
+  var idx = src.indexOf('調整前');
+  if(idx < 0) return null;
+  var s0 = src.lastIndexOf('。', idx) + 1;
+  var head = src.slice(s0, idx).trim();
+  var m = src.slice(s0).match(/^.{0,24}?調整前(?:有|為)?(.{2,120}?)[，,]+調整後[，,](.{2,120}?)(?:。|$)/);
+  if(!m) return null;
+  var pre = adjPairs(m[1]), post = adjPairs(m[2]);
+  if(pre.length < 2 || post.length < 2) return null;
+  var rows = pre.map(function(p){
+    var q2 = post.filter(function(x){ return x.lab === p.lab; })[0] || { amt:'' };
+    return { lab:p.lab, a:p.amt, b:q2.amt };
+  });
+  var body = rows.map(function(r){
+    return '<tr><td class="gl">' + esc(r.lab) + '</td><td class="gc">' + esc(r.a) + '</td><td class="gc">' + esc(r.b) + '</td></tr>';
+  }).join('');
+  var html = (head ? '<div class="q-cap">' + esc(head.replace(/[，,：:]+$/,'')) + '（調整前後對照）</div>' : '') +
+    '<div class="q-grid"><table><thead><tr><th>項目</th><th class="gc">調整前</th><th class="gc">調整後</th></tr></thead><tbody>' + body + '</tbody></table></div>';
+  return { html: html, raw: src.slice(s0, s0 + m[0].length) };
+}
+
 function gridHtml(g, filled, fillMap){
   var head = '<tr><th>項目</th>' + g.cols.map(function(c){ return '<th class="gc">' + esc(c) + '</th>'; }).join('') + '</tr>';
   var body = g.rows.map(function(r){
@@ -1032,11 +1069,14 @@ function renderQText(q){
   var raw = String((q && q.text) || '').replace(/\r/g,'').replace(/^\s*\d+\.\s*/,'').trim();
   var grid = noteGridOf(raw);
   if(grid) raw = raw.replace(grid.raw, '').trim();
+  var adj = adjustGrid(raw);
+  if(adj) raw = raw.replace(adj.raw, '。〔T〕。').trim();
   var blocks = [];
 
   qSegs(raw).forEach(function(seg){
     var t = seg.replace(/^[，,、]+/,'').replace(/^[）)]/,'').trim();
     if(!t) return;
+    if(t === '〔T〕'){ blocks.push({ type:'adjtbl' }); return; }
 
     var mTitle = t.match(/^(.*?)【([^】]{1,40})】(.*)$/);
     if(mTitle){
@@ -1133,13 +1173,17 @@ function renderQText(q){
       }
       var tot = '';
       if(i < blocks.length && blocks[i].type === 'tot'){ tot = blocks[i].txt; i++; }
-      var cols = grp.map(function(g){
+      var totParts = tot ? tot.split(/[／\/]/).map(function(x){ return x.trim(); }) : [];
+      var cols = grp.map(function(g, gi){
         var rr = qRows(g.txt) || qListRows(g.txt) || [{ lab:g.txt, amt:'' }];
         var inner = '<div class="st-title">' + esc(g.label) + '</div>';
         rr.forEach(function(r){
-          inner += '<div class="st-row"><span class="st-lab">' + esc(r.lab) + '</span><span class="st-amt">' + esc(r.amt) + '</span></div>';
+          inner += '<div class="st-row"><span class="st-lab">' + esc(r.lab) + '</span><span class="st-amt">' + esc(qMoney(r.amt)) + '</span></div>';
         });
-        if(tot) inner += '<div class="st-row total"><span class="st-lab">合計</span><span class="st-amt">' + esc(tot) + '</span></div>';
+        if(tot){
+          var own = grp.length > 1 ? (totParts[gi] || '') : tot;
+          if(own) inner += '<div class="st-row total"><span class="st-lab">合計</span><span class="st-amt">' + esc(own) + '</span></div>';
+        }
         return '<div class="stmt">' + inner + '</div>';
       }).join('');
       html += '<div class="q-cols">' + cols + '</div>';
@@ -1162,6 +1206,7 @@ function renderQText(q){
       html += '<div class="q-items">' + items + '</div>';
       continue;
     }
+    if(b.type === 'adjtbl'){ html += adj.html; i++; continue; }
     if(b.type === 'dat'){ html += qDatPanel(b.rows, ''); i++; continue; }
     if(b.type === 'tot'){ html += '<div class="q-p"><b>合計 ' + esc(b.txt) + '</b></div>'; i++; continue; }
     if(b.type === 'cap'){ html += '<div class="q-cap">' + esc(b.txt.replace(/[：:，,、]+$/, '')) + '</div>'; i++; continue; }
